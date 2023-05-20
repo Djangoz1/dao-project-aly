@@ -44,7 +44,8 @@ contract Voting is Ownable {
     mapping(address => Voter) voters;
     Proposal[] proposals;
     Proposal winner;
-
+    // La whitelist est composé d'address qui a été identifié
+    address[] whitelist;
     // Faire une variable de counter pour savoir le nombre max de votant
     uint numberVoters;
     // Faire une variable de counter pour savoir le nombre effectif de vote
@@ -83,9 +84,6 @@ contract Voting is Ownable {
         defaultStatus = _newStatus;
     }
 
-    // La whitelist est composé d'address qui a été identifié
-    mapping(address => bool) whitelist;
-
     // ----------------------
     // ----------------------
     // * Whitelist fonction
@@ -98,14 +96,24 @@ contract Voting is Ownable {
         address _address
     ) public onlyOwner checkWorkflowStatus(WorkflowStatus.RegisteringVoters) {
         // Vérifier que l'adress n'est pas déjà whitelister
+        require(
+            _address != address(0),
+            "Vous n'avez pas entrer d'address valide"
+        );
         require(!voters[_address].isRegistered, "address already registered");
         voters[_address].isRegistered = true;
+        whitelist.push(_address);
+
         emit VoterRegistered(_address);
         numberVoters++;
     }
 
+    function getWhitelist() public view returns (address[] memory) {
+        return whitelist;
+    }
+
     // ? Fonction getter de la whitelist
-    function getVoters(
+    function getVoter(
         address _address
     ) public view voterAccess returns (Voter memory) {
         // Vérifier que l'adress est whitelister

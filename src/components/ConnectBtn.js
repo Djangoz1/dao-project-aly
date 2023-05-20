@@ -9,7 +9,7 @@ export const ConnectBtn = ({ address, setAddress }) => {
       const result = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-      setAddress(result);
+      setAddress(result[0]);
     }
   }
   return (

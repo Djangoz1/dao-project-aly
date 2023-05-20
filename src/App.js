@@ -4,22 +4,36 @@ import { useEffect, useState } from "react";
 import { ConnectBtn } from "./components/ConnectBtn";
 import { ethers } from "ethers";
 import { fetchOwner } from "./utils";
+import { Admin } from "./sections/Admin";
+import { CONTRACT_ADDRESS } from "./constants";
 
 function App() {
   const [user, setUser] = useState();
-  const DAOaddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
   const [data, setData] = useState();
   const [error, setError] = useState();
   const [address, setAddress] = useState();
   const [owner, setOwner] = useState();
   const [isContract, setIsContract] = useState();
+
+  const [ownerAccess, setOwnerAccess] = useState(false);
+
   useEffect(() => {
     fetchData();
   }, []);
+  useEffect(() => {
+    if (owner === address) {
+      setOwnerAccess(true);
+    }
+  }, [owner, address]);
+
   async function fetchData() {
     if (typeof window.ethereum !== "undefined") {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
-      const contract = new ethers.Contract(DAOaddress, Voting.abi, provider);
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        Voting.abi,
+        provider
+      );
 
       setIsContract(contract);
       try {
@@ -48,8 +62,10 @@ function App() {
         <h1>DAO Project</h1>
         <ConnectBtn address={address} setAddress={setAddress} />
       </header>
-      <div className="mt-[25vh] text-center">
-        {/* {owner === address} */}
+      <div className="mt-[25vh] w-[90%] mx-auto text-center">
+        {ownerAccess && isContract && (
+          <Admin data={data} isContract={isContract} />
+        )}
         Connect to enter DAO
         <p>Propriétaire : {owner}</p>
       </div>
