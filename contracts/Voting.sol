@@ -151,6 +151,16 @@ contract Voting is Ownable {
         emit ProposalRegistered(_id);
     }
 
+    // ? Fonction getter de toutes les propositions
+    function getProposals()
+        public
+        view
+        voterAccess
+        returns (Proposal[] memory)
+    {
+        return proposals;
+    }
+
     // ? Fermer la session des propositions
     function closeRegisteringSessionProposal() public onlyOwner {
         // S'assurer qu'il y ait au moins deux propositions pour fermer la session

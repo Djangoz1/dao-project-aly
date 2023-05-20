@@ -82,17 +82,86 @@ export const _setWorkflowStatus = async (_previousStatusId, _newStatusId) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+
     try {
+      let _transaction;
+      let overrides = {
+        from: _accounts[0],
+      };
+      if (_previousStatusId === 0 && _newStatusId === 1) {
+        _transaction = await contract.openRegisteringSessionProposal(overrides);
+      }
+      if (_previousStatusId === 1 && _newStatusId === 2) {
+        _transaction = await contract.closeRegisteringSessionProposal(
+          overrides
+        );
+      }
+      if (_previousStatusId === 2 && _newStatusId === 3) {
+        _transaction = await contract.openRegisteringSessionVote(overrides);
+      }
+      if (_previousStatusId === 3 && _newStatusId === 4) {
+        _transaction = await contract.closeRegisteringSessionVote(overrides);
+      }
+      if (_previousStatusId === 4 && _newStatusId === 5) {
+        _transaction = await contract.countVote(overrides);
+      } else {
+        throw new Error("You can't switch to this workflow status");
+      }
+      await _transaction.wait();
+    } catch (err) {
+      return err;
+    }
+  }
+};
+export const _setProposals = async (_description) => {
+  if (typeof window.ethereum !== "undefined") {
+    let _accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    console.log(contract);
+    try {
+      if (!_description) {
+        throw new Error("You must add description");
+      }
+
       let overrides = {
         from: _accounts[0],
       };
 
-      const _transaction = await contract.changeStatus(
-        _previousStatusId,
-        _newStatusId,
-        overrides
-      );
+      const _transaction = await contract.addProposal(_description, overrides);
+      console.log("--------", _transaction);
       await _transaction.wait();
+    } catch (err) {
+      return err;
+    }
+  }
+};
+export const _getProposals = async () => {
+  if (typeof window.ethereum !== "undefined") {
+    let _accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    console.log(contract);
+    try {
+      //   if (!_description) {
+      //     throw new Error("You must add description");
+      //   }
+
+      let overrides = {
+        from: _accounts[0],
+      };
+
+      const _proposals = await contract.getProposals(overrides);
+      //   const _transaction = await contract.addProposal(_description, overrides);
+      //   console.log("--------", _transaction);
+      //   await _transaction.wait();
+      return _proposals;
     } catch (err) {
       return err;
     }

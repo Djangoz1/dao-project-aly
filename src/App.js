@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { _fetchOwner, fetchOwner } from "./utils";
 import { Admin } from "./sections/Admin";
 import { CONTRACT_ADDRESS } from "./constants";
+import { Proposals } from "./sections/Proposals";
 
 function App() {
   const [user, setUser] = useState();
@@ -64,8 +65,11 @@ function App() {
         <h1>DAO Project</h1>
         <ConnectBtn address={address} setAddress={setAddress} />
       </header>
-      <div className="mt-[25vh] w-[90%] mx-auto text-center">
+      <div className="mt-[2vh] w-[90%] mx-auto text-center">
         {ownerAccess && <Admin data={data} isContract={isContract} />}
+        {/* <div className="pt-[10vh] "> */}
+        <Proposals />
+        {/* </div> */}
         Connect to enter DAO
         <p>Propriétaire : {owner}</p>
       </div>

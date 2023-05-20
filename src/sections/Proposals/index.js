@@ -1,0 +1,66 @@
+import { IcRefresh } from "../../assets/icones";
+import { _fetchWhitelist, _getProposals, _setProposals } from "../../utils";
+import React, { useEffect, useState } from "react";
+
+export const Proposals = ({}) => {
+  const [proposals, setProposals] = useState([]);
+
+  const getProposals = async () => {
+    const result = await _getProposals();
+    console.log(result);
+    setProposals(result);
+  };
+  const [inputProposal, setInputProposal] = useState();
+  const handleSubmitProposal = () => {
+    if (inputProposal.length > 2) {
+      _setProposals(inputProposal);
+    }
+  };
+  useEffect(() => {
+    getProposals();
+  }, []);
+  return (
+    <div className="flex mt-[4vh] flex-col">
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text">Enter proposal</span>
+        </label>
+        <label className="input-group input-group-xs input-group-secondary">
+          <button className="btn px-0" onClick={handleSubmitProposal}>
+            <span className="w-full h-full text-xs">Add proposal</span>
+          </button>
+          <input
+            type="text"
+            onChange={(e) => setInputProposal(e.target.value)}
+            placeholder="Description"
+            className="input  input-bordered"
+          />
+        </label>
+      </div>
+
+      <div className="overflow-x-auto relative">
+        <table className="table  w-full">
+          {/* head */}
+          <thead onClick={getProposals}>
+            <tr>
+              <th>Address proposer</th>
+              <th>Description</th>
+              <th>Count vote</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {proposals?.map((e) => (
+              <tr className="text-xs" key={e?.description}>
+                <th className="text-xs">{e?.description}</th>
+                <td>Undefined</td>
+                <td>Blue</td>
+                <th></th>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+};
