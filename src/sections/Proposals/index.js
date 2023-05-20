@@ -1,4 +1,5 @@
-import { IcRefresh } from "../../assets/icones";
+import { BigNumber, ethers } from "ethers";
+import { IcCheck, IcRefresh } from "../../assets/icones";
 import {
   doProposalsState,
   useAuthDispatch,
@@ -11,10 +12,27 @@ import {
   _votingProposal,
 } from "../../utils";
 import React, { useEffect, useState } from "react";
+import { parseHex } from "../../utils/tools";
+import { ListProposals } from "../../components/ListProposals";
 
 export const Proposals = ({}) => {
-  const { proposals } = useAuthState();
+  const { proposals, whitelist, user } = useAuthState();
   const dispatch = useAuthDispatch();
+
+  const [isProposals, setIsProposals] = useState();
+
+  useEffect(() => {
+    if (proposals) {
+      setIsProposals(proposals);
+    }
+  }, [proposals]);
+
+  // Parse le _hex pour vérifier si le voteProposalId === index de la proposal
+  const checkProposalVote = (index) => {
+    const proposalId = parseHex(user?.voter?.votedProposalId?._hex);
+
+    return proposalId === index ? true : false;
+  };
 
   const [inputProposal, setInputProposal] = useState();
   const handleSubmitProposal = () => {
@@ -49,34 +67,7 @@ export const Proposals = ({}) => {
         </label>
       </div>
 
-      <div className="overflow-x-auto relative">
-        <table className="table  w-full">
-          {/* head */}
-          <thead onClick={() => doProposalsState(dispatch)}>
-            <tr>
-              <th>Address proposer</th>
-              <th>Description</th>
-              <th>Count vote</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {proposals?.map((e, i) => (
-              <tr className="text-xs" key={e?.description}>
-                <th className="text-xs">{e?.description}</th>
-                <td>Undefined</td>
-                <td>{e?.voteCount?._hex}</td>
-
-                <th className="flex justify-end">
-                  <button className="btn" onClick={() => handleVoteProposal(i)}>
-                    Click for vote
-                  </button>
-                </th>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <ListProposals isProposals={isProposals} />
     </div>
   );
 };

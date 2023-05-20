@@ -41,7 +41,7 @@ const ElementList = ({ address, voter }) => {
   const proposalVote =
     voter?.votedProposalId?._hex?.[voter?.votedProposalId?._hex?.length - 1];
   const { proposals } = useAuthState();
-  const myVote = proposals[proposalVote];
+  const myVote = proposals?.[proposalVote];
 
   return (
     <tr className="text-xs">

@@ -2,6 +2,19 @@ import { CONTRACT_ADDRESS } from "../constants";
 import Voting from "../artifacts/contracts/Voting.sol/Voting.json";
 import { ethers } from "ethers";
 
+export const _getAccount = async () => {
+  if (typeof window.ethereum !== "undefined") {
+    try {
+      const result = await window.ethereum.request({
+        method: "eth_requestAccounts",
+      });
+      return result[0];
+    } catch (error) {
+      return error;
+    }
+  }
+};
+
 export const _fetchOwner = async () => {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);

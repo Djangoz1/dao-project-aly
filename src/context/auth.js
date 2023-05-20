@@ -3,6 +3,7 @@
 import { createContext, useContext, useReducer } from "react";
 import {
   _fetchWhitelist,
+  _getAccount,
   _getProposals,
   _getVoter,
   _getWorkflowStatus,
@@ -30,24 +31,29 @@ const initialState = {
 };
 
 // Fonction appelé au moment du onClick
-// export const doProposalsState = async (dispatch, user, password) => {
-//   dispatch({ status: "pending" });
 
-//   const req = await getUser(user, password);
-//   console.log("login state", req);
-//   if (req.user) {
-//     dispatch({ proposals: , error: null, user: req.user.profile });
-//     // localStorage.setItem("minecube_auth", JSON.stringify(initialState));
-//   } else {
-//     dispatch({ status: "rejected", error: req, user: null });
-//   }
-// };
 export const doWhitelistState = async (dispatch) => {
   dispatch({ status: "pending" });
   const result = await _fetchWhitelist();
 
   if (result) {
     dispatch({ whitelist: result, error: null });
+    // localStorage.setItem("minecube_auth", JSON.stringify(initialState));
+  } else {
+    dispatch({
+      status: "rejected",
+      error: "Something went wrong during fetching whitelist",
+    });
+  }
+};
+export const doUserState = async (dispatch) => {
+  dispatch({ status: "pending" });
+  const _address = await _getAccount();
+
+  if (_address) {
+    const _voter = await _getVoter(_address);
+
+    dispatch({ user: { address: _address, voter: _voter }, error: null });
     // localStorage.setItem("minecube_auth", JSON.stringify(initialState));
   } else {
     dispatch({
