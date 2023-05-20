@@ -55,6 +55,7 @@ contract Voting is Ownable {
     constructor() {
         // On part du principe que l'administrateur au vote fait partie des votants
         voters[msg.sender] = Voter(true, false, 0);
+        whitelist.push(msg.sender);
         numberVoters++;
         // ? Ouvrir l'inscription au vote dès le déploiement
         changeStatus(defaultStatus, WorkflowStatus.RegisteringVoters);

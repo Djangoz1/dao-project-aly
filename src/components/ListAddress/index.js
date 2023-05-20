@@ -1,21 +1,13 @@
+import { IcRefresh } from "../../assets/icones";
 import { _fetchWhitelist } from "../../utils";
 import React, { useEffect, useState } from "react";
 
-export const ListAddress = () => {
-  const [whitelist, setWhitelist] = useState();
-  const getWhitelist = async () => {
-    const result = await _fetchWhitelist();
-    setWhitelist(result);
-  };
-  useEffect(() => {
-    getWhitelist();
-  }, []);
-
+export const ListAddress = ({ whitelist }) => {
   return (
-    <div className="overflow-x-auto">
-      <table className="table w-full">
+    <div className="overflow-x-auto relative">
+      <table className="table  w-full">
         {/* head */}
-        <thead onClick={getWhitelist}>
+        <thead>
           <tr>
             <th>Address</th>
             <th>Has voted</th>
@@ -24,7 +16,6 @@ export const ListAddress = () => {
           </tr>
         </thead>
         <tbody>
-          {/* row 1 */}
           {whitelist?.map((e) => (
             <tr className="text-xs" key={e}>
               <th className="text-xs">{e}</th>

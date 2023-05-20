@@ -3,7 +3,7 @@ import Voting from "./artifacts/contracts/Voting.sol/Voting.json";
 import { useEffect, useState } from "react";
 import { ConnectBtn } from "./components/ConnectBtn";
 import { ethers } from "ethers";
-import { fetchOwner } from "./utils";
+import { _fetchOwner, fetchOwner } from "./utils";
 import { Admin } from "./sections/Admin";
 import { CONTRACT_ADDRESS } from "./constants";
 
@@ -22,6 +22,7 @@ function App() {
   }, []);
   useEffect(() => {
     if (owner === address) {
+      console.log(true);
       setOwnerAccess(true);
     }
   }, [owner, address]);
@@ -35,11 +36,12 @@ function App() {
         provider
       );
 
-      setIsContract(contract);
       try {
         const cost = await contract.cost();
-        const totalSupply = await contract.totalSupply();
+        const totalSupply = await contract?.totalSupply();
         const object = { cost: String(cost), totalSupply: String(totalSupply) };
+        console.log("test", contract);
+        setIsContract(contract);
         setData(object);
       } catch (err) {
         setError(err.message);
@@ -50,7 +52,7 @@ function App() {
   useEffect(() => {
     const getOwner = async () => {
       if (!owner) {
-        const _owner = await fetchOwner();
+        const _owner = await _fetchOwner();
         setOwner(_owner);
       }
     };
@@ -63,9 +65,7 @@ function App() {
         <ConnectBtn address={address} setAddress={setAddress} />
       </header>
       <div className="mt-[25vh] w-[90%] mx-auto text-center">
-        {ownerAccess && isContract && (
-          <Admin data={data} isContract={isContract} />
-        )}
+        {ownerAccess && <Admin data={data} isContract={isContract} />}
         Connect to enter DAO
         <p>Propriétaire : {owner}</p>
       </div>
