@@ -1,5 +1,10 @@
 import { IcRefresh } from "../../assets/icones";
-import { _fetchWhitelist, _getProposals, _setProposals } from "../../utils";
+import {
+  _fetchWhitelist,
+  _getProposals,
+  _setProposals,
+  _votingProposal,
+} from "../../utils";
 import React, { useEffect, useState } from "react";
 
 export const Proposals = ({}) => {
@@ -19,6 +24,10 @@ export const Proposals = ({}) => {
   useEffect(() => {
     getProposals();
   }, []);
+
+  const handleVoteProposal = (proposalId) => {
+    _votingProposal(proposalId);
+  };
   return (
     <div className="flex mt-[4vh] flex-col">
       <div className="form-control">
@@ -50,12 +59,17 @@ export const Proposals = ({}) => {
             </tr>
           </thead>
           <tbody>
-            {proposals?.map((e) => (
+            {proposals?.map((e, i) => (
               <tr className="text-xs" key={e?.description}>
                 <th className="text-xs">{e?.description}</th>
                 <td>Undefined</td>
-                <td>Blue</td>
-                <th></th>
+                <td>{e?.voteCount?._hex}</td>
+
+                <th className="flex justify-end">
+                  <button className="btn" onClick={() => handleVoteProposal(i)}>
+                    Click for vote
+                  </button>
+                </th>
               </tr>
             ))}
           </tbody>

@@ -1,5 +1,5 @@
-import { IcRefresh } from "../../assets/icones";
-import { _fetchWhitelist } from "../../utils";
+import { IcCheck, IcCross, IcRefresh } from "../../assets/icones";
+import { _fetchWhitelist, _getVoter } from "../../utils";
 import React, { useEffect, useState } from "react";
 
 export const ListAddress = ({ whitelist }) => {
@@ -17,15 +17,30 @@ export const ListAddress = ({ whitelist }) => {
         </thead>
         <tbody>
           {whitelist?.map((e) => (
-            <tr className="text-xs" key={e}>
-              <th className="text-xs">{e}</th>
-              <td>FALSE</td>
-              <td>Undefined</td>
-              <td>Blue</td>
-            </tr>
+            <ElementList address={e} />
           ))}
         </tbody>
       </table>
     </div>
+  );
+};
+
+const ElementList = ({ address }) => {
+  const [voterState, setVoterState] = useState({});
+  const getVoter = async () => {
+    const voter = await _getVoter(address);
+    console.log("voter ---------", voter);
+    setVoterState(voter);
+  };
+  useEffect(() => {
+    getVoter(address);
+  }, [address]);
+  return (
+    <tr className="text-xs" key={address}>
+      <th className="text-xs">{address}</th>
+      <td>{voterState?.hasVoted ? <IcCheck /> : <IcCross />}</td>
+      <td>{voterState?.votedProposalId?._hex}</td>
+      <td>Blue</td>
+    </tr>
   );
 };

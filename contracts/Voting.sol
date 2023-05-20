@@ -193,7 +193,7 @@ contract Voting is Ownable {
         checkWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         // Vérifier que la proposition existe
-        require(_id > proposals.length, "This proposal doesn't exist");
+        require(_id < proposals.length, "This proposal doesn't exist");
         // Vérifier que l'électeur n'a pas déjà voté
         require(!voters[msg.sender].hasVoted, "You vote is already done");
         voters[msg.sender].hasVoted = true;
@@ -237,7 +237,7 @@ contract Voting is Ownable {
     function getWinner() public view returns (Proposal memory) {
         require(
             defaultStatus == WorkflowStatus.VotesTallied,
-            "the count is not over yet"
+            "the count is not finish yet"
         );
         return winner;
     }

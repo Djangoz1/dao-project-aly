@@ -37,6 +37,28 @@ export const _fetchWhitelist = async () => {
     }
   }
 };
+
+export const _getVoter = async (_address) => {
+  if (typeof window.ethereum !== "undefined") {
+    let _accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    try {
+      let overrides = {
+        from: _accounts[0],
+      };
+
+      const _voter = await contract.getVoter(_address, overrides);
+      return _voter;
+    } catch (err) {
+      return err;
+    }
+  }
+};
+
 export const _setWhitelist = async (_address) => {
   if (typeof window.ethereum !== "undefined") {
     let _accounts = await window.ethereum.request({
@@ -60,6 +82,7 @@ export const _setWhitelist = async (_address) => {
     }
   }
 };
+
 export const _getWorkflowStatus = async () => {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
@@ -152,16 +175,38 @@ export const _getProposals = async () => {
       //   if (!_description) {
       //     throw new Error("You must add description");
       //   }
-
       let overrides = {
         from: _accounts[0],
       };
 
       const _proposals = await contract.getProposals(overrides);
-      //   const _transaction = await contract.addProposal(_description, overrides);
-      //   console.log("--------", _transaction);
-      //   await _transaction.wait();
+
       return _proposals;
+    } catch (err) {
+      return err;
+    }
+  }
+};
+
+export const _votingProposal = async (_proposalId) => {
+  if (typeof window.ethereum !== "undefined") {
+    let _accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+
+    try {
+      //   if (!_description) {
+      //     throw new Error("You must add description");
+      //   }
+      let overrides = {
+        from: _accounts[0],
+      };
+      console.log(_proposalId, _accounts[0]);
+      const _proposals = await contract.voteProposal(_proposalId, overrides);
+      await _proposals.wait();
     } catch (err) {
       return err;
     }

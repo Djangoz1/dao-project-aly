@@ -19,5 +19,13 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 module.exports = {
   solidity: "0.8.4",
   paths: { artifacts: "./src/artifacts" },
-  networks: { hardhat: { chainId: 31337 } },
+  networks: {
+    hardhat: {
+      chainId: 1336,
+      // mining: {
+      //   auto: true, // Désactiver l'automining
+      //   interval: 2000, // Intervalle entre les blocs (en millisecondes)
+      // },
+    },
+  },
 };
