@@ -60,7 +60,7 @@ function App() {
     getOwner();
   }, [isContract]);
   return (
-    <div className="bg-violet-700 h-screen w-screen">
+    <div className="bg-blue-900 min-h-screen w-screen">
       <header className="flex items-center justify-between w-[90%] mx-auto pt-[4vh]">
         <h1>DAO Project</h1>
         <ConnectBtn address={address} setAddress={setAddress} />
@@ -70,6 +70,7 @@ function App() {
         {/* <div className="pt-[10vh] "> */}
         <Proposals />
         {/* </div> */}
+        <div className="mt-[10vh]"></div>
         Connect to enter DAO
         <p>Propriétaire : {owner}</p>
       </div>

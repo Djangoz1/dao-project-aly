@@ -1,5 +1,10 @@
 import { IcRefresh } from "../../assets/icones";
 import {
+  doProposalsState,
+  useAuthDispatch,
+  useAuthState,
+} from "../../context/auth";
+import {
   _fetchWhitelist,
   _getProposals,
   _setProposals,
@@ -8,13 +13,9 @@ import {
 import React, { useEffect, useState } from "react";
 
 export const Proposals = ({}) => {
-  const [proposals, setProposals] = useState([]);
+  const { proposals } = useAuthState();
+  const dispatch = useAuthDispatch();
 
-  const getProposals = async () => {
-    const result = await _getProposals();
-    console.log(result);
-    setProposals(result);
-  };
   const [inputProposal, setInputProposal] = useState();
   const handleSubmitProposal = () => {
     if (inputProposal.length > 2) {
@@ -22,7 +23,8 @@ export const Proposals = ({}) => {
     }
   };
   useEffect(() => {
-    getProposals();
+    doProposalsState(dispatch);
+    // getProposals();
   }, []);
 
   const handleVoteProposal = (proposalId) => {
@@ -50,7 +52,7 @@ export const Proposals = ({}) => {
       <div className="overflow-x-auto relative">
         <table className="table  w-full">
           {/* head */}
-          <thead onClick={getProposals}>
+          <thead onClick={() => doProposalsState(dispatch)}>
             <tr>
               <th>Address proposer</th>
               <th>Description</th>

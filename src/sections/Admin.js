@@ -3,6 +3,11 @@ import { ListAddress } from "../components/ListAddress";
 import React, { useEffect, useState } from "react";
 import { IcRefresh } from "../assets/icones";
 import { EtapButton } from "../components/EtapButtons";
+import {
+  doWhitelistState,
+  useAuthDispatch,
+  useAuthState,
+} from "../context/auth";
 // 0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc
 // 0x90f79bf6eb2c4f870365e785982e1f101e93b906
 // 0x15d34aaf54267db7d7c367839aaf71a00a2c6a65
@@ -12,22 +17,20 @@ import { EtapButton } from "../components/EtapButtons";
 // 0x8626f6940e2eb28930efb4cef49b2d1f2c9c1199
 export const Admin = ({ isContract }) => {
   const [inputAddress, setInputAddress] = useState();
-  const [whitelist, setWhitelist] = useState();
-  const getWhitelist = async () => {
-    const result = await _fetchWhitelist();
-    if (!result.err) {
-      setWhitelist(result);
-    }
-  };
-  useEffect(() => {
-    if (!whitelist) {
-      getWhitelist();
-    }
-  }, []);
 
-  const handleSubmitAddress = () => {
-    _setWhitelist(inputAddress);
-    getWhitelist();
+  const state = useAuthState();
+  const dispatch = useAuthDispatch();
+  const _whitelist = state.whitelist;
+
+  useEffect(() => {
+    if (!_whitelist) {
+      doWhitelistState(dispatch);
+    }
+  }, [_whitelist]);
+
+  const handleSubmitAddress = async () => {
+    await _setWhitelist(inputAddress);
+    doWhitelistState(dispatch);
   };
 
   return (
@@ -51,11 +54,11 @@ export const Admin = ({ isContract }) => {
             />
           </label>
         </div>
-        <button className="btn" onClick={getWhitelist}>
+        <button className="btn" onClick={() => doWhitelistState(dispatch)}>
           <IcRefresh />
         </button>
       </div>
-      <ListAddress whitelist={whitelist} />
+      <ListAddress />
     </div>
   );
 };

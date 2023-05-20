@@ -1,8 +1,21 @@
 import { IcCheck, IcCross, IcRefresh } from "../../assets/icones";
-import { _fetchWhitelist, _getVoter } from "../../utils";
-import React, { useEffect, useState } from "react";
+import {
+  doVotersState,
+  useAuthDispatch,
+  useAuthState,
+} from "../../context/auth";
 
-export const ListAddress = ({ whitelist }) => {
+import React, { useEffect } from "react";
+
+export const ListAddress = () => {
+  const { whitelist, voters } = useAuthState();
+  const dispatch = useAuthDispatch();
+  useEffect(() => {
+    if (whitelist && !voters) {
+      doVotersState(dispatch, whitelist);
+    }
+  }, [whitelist]);
+
   return (
     <div className="overflow-x-auto relative">
       <table className="table  w-full">
@@ -10,14 +23,13 @@ export const ListAddress = ({ whitelist }) => {
         <thead>
           <tr>
             <th>Address</th>
-            <th>Has voted</th>
             <th>Vote proposal</th>
-            <th>Register Date</th>
+            <th>Has voted</th>
           </tr>
         </thead>
         <tbody>
-          {whitelist?.map((e) => (
-            <ElementList address={e} />
+          {whitelist?.map((e, i) => (
+            <ElementList key={e} address={e} voter={voters?.[i]} />
           ))}
         </tbody>
       </table>
@@ -25,22 +37,17 @@ export const ListAddress = ({ whitelist }) => {
   );
 };
 
-const ElementList = ({ address }) => {
-  const [voterState, setVoterState] = useState({});
-  const getVoter = async () => {
-    const voter = await _getVoter(address);
-    console.log("voter ---------", voter);
-    setVoterState(voter);
-  };
-  useEffect(() => {
-    getVoter(address);
-  }, [address]);
+const ElementList = ({ address, voter }) => {
+  const proposalVote =
+    voter?.votedProposalId?._hex?.[voter?.votedProposalId?._hex?.length - 1];
+  const { proposals } = useAuthState();
+  const myVote = proposals[proposalVote];
+
   return (
-    <tr className="text-xs" key={address}>
+    <tr className="text-xs">
       <th className="text-xs">{address}</th>
-      <td>{voterState?.hasVoted ? <IcCheck /> : <IcCross />}</td>
-      <td>{voterState?.votedProposalId?._hex}</td>
-      <td>Blue</td>
+      <td>{voter?.hasVoted ? myVote?.description : "No vote"}</td>
+      <td>{voter?.hasVoted ? <IcCheck /> : <IcCross />}</td>
     </tr>
   );
 };

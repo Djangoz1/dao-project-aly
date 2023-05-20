@@ -21,7 +21,7 @@ export const IcCheck = () => (
     fill="none"
     viewBox="0 0 24 24"
     strokeWidth={1.5}
-    stroke="currentColor"
+    stroke="green"
     className="w-6 h-6"
   >
     <path
@@ -37,7 +37,7 @@ export const IcCross = () => (
     fill="none"
     viewBox="0 0 24 24"
     strokeWidth={1.5}
-    stroke="currentColor"
+    stroke="red"
     className="w-6 h-6"
   >
     <path
