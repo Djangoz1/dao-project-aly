@@ -167,7 +167,7 @@ contract Voting is Ownable {
         require(proposals.length >= 2, "Not enough proposal to proceed vote");
         changeStatus(
             WorkflowStatus.ProposalsRegistrationStarted,
-            WorkflowStatus.RegisteringVoters
+            WorkflowStatus.ProposalsRegistrationEnded
         );
     }
 
@@ -179,7 +179,7 @@ contract Voting is Ownable {
     // ? Ouvrir la session des votes
     function openRegisteringSessionVote() public onlyOwner {
         changeStatus(
-            WorkflowStatus.RegisteringVoters,
+            WorkflowStatus.ProposalsRegistrationEnded,
             WorkflowStatus.VotingSessionStarted
         );
     }

@@ -1,41 +1,58 @@
 import React, { useEffect, useState } from "react";
-import { doProposalsState, useAuthDispatch } from "../../context/auth";
+import {
+  doProposalsState,
+  useAuthDispatch,
+  useAuthState,
+} from "../../context/auth";
 
 import { Proposal } from "./Proposal";
 import { v4 as uuidv4 } from "uuid";
 import { parseHex } from "../../utils/tools";
+import { _CHECK_STATUS_VOTE_OPEN } from "../../constants";
 
-export const ListProposals = ({ isProposals }) => {
+export const ListProposals = ({ user }) => {
   const dispatch = useAuthDispatch();
   const [totalVote, setTotalVote] = useState(0);
+  const { proposals, workflowStatus } = useAuthState();
+  const [voteIsOpen, setVoteIsOpen] = useState(false);
+
   useEffect(() => {
-    if (isProposals) {
+    if (workflowStatus) {
+      const access = _CHECK_STATUS_VOTE_OPEN(workflowStatus);
+      setVoteIsOpen(access);
+    }
+  }, [workflowStatus]);
+  useEffect(() => {
+    if (proposals) {
       let total = 0;
-      isProposals?.map((proposal) => {
+      proposals?.map((proposal) => {
         total += parseHex(proposal?.voteCount?._hex);
       });
       setTotalVote(total);
     }
-  }, [isProposals]);
+  }, [proposals]);
 
   return (
     <div className="overflow-x-auto relative">
       <table className="table  w-full">
-        {/* head */}
         <thead onClick={() => doProposalsState(dispatch)}>
           <tr>
-            <th></th>
+            {voteIsOpen && <th></th>}
             <th>Description</th>
-            <th>Count vote</th>
-            <th></th>
+            <th>
+              {voteIsOpen ? "Vote count" : "Waiting for session vote open"}
+            </th>
+            {voteIsOpen && <th></th>}
           </tr>
         </thead>
         <tbody>
-          {isProposals?.map((e, i) => (
+          {proposals?.map((e, i) => (
             <Proposal
+              voteIsOpen={voteIsOpen}
               totalVote={totalVote}
               key={uuidv4()}
               proposal={e}
+              user={user}
               index={i}
             />
           ))}

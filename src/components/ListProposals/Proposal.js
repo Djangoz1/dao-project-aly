@@ -1,56 +1,65 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { parseHex } from "../../utils/tools";
 import {
   doProposalsState,
+  doUserState,
+  doVotersState,
   useAuthDispatch,
   useAuthState,
 } from "../../context/auth";
 import { IcCheck } from "../../assets/icones";
 import { _votingProposal } from "../../utils";
 
-export const Proposal = ({ proposal, index, totalVote }) => {
-  const { user } = useAuthState();
+export const Proposal = ({ proposal, index, user, totalVote, voteIsOpen }) => {
   const dispatch = useAuthDispatch();
+
+  const { whitelist, owner } = useAuthState();
   const checkProposalVote = (index) => {
     const proposalId = parseHex(user?.voter?.votedProposalId?._hex);
-
     return proposalId === index ? true : false;
   };
   const handleVoteProposal = async (proposalId) => {
     await _votingProposal(proposalId);
-    doProposalsState(dispatch);
+    await doProposalsState(dispatch);
+    await doUserState(dispatch, owner);
+    await doVotersState(dispatch, whitelist);
   };
 
   const findAverageVote = () => {
-    return Math.floor((parseHex(proposal?.voteCount?._hex) / totalVote) * 100);
+    const _int = (parseHex(proposal?.voteCount?._hex) / totalVote) * 100;
+
+    return _int > 0 ? Math.floor(_int) : 0;
   };
 
   return (
     <tr className="text-xs " key={proposal?.description}>
-      <th>
-        <div
-          className="radial-progress  text-primary-content border-4 border-primary"
-          style={{ "--value": findAverageVote(), "--size": "3rem" }}
-        >
-          {findAverageVote()}%
-        </div>
-      </th>
+      {voteIsOpen && (
+        <td>
+          <div
+            className="radial-progress  text-primary-content border-4 border-primary"
+            style={{ "--value": findAverageVote(), "--size": "3rem" }}
+          >
+            {findAverageVote()}%
+          </div>
+        </td>
+      )}
       <th className="text-xs">{proposal?.description}</th>
-
-      <td>{parseHex(proposal?.voteCount?._hex)}</td>
-
+      {voteIsOpen && <td>{parseHex(proposal?.voteCount?._hex)}</td>}
       <th className=" w-fit">
-        {user?.voter?.hasVoted ? (
-          checkProposalVote(index) && (
-            <div className="flex justify-end">
-              <IcCheck />
-            </div>
-          )
-        ) : (
-          <button className="btn" onClick={() => handleVoteProposal(index)}>
-            Click for vote
-          </button>
-        )}
+        <div className="flex justify-end">
+          {user?.voter?.hasVoted ? (
+            checkProposalVote(index) && <IcCheck />
+          ) : voteIsOpen ? (
+            <button
+              className="btn glass btn-sm"
+              onClick={() => handleVoteProposal(index)}
+            >
+              Vote
+            </button>
+          ) : (
+            <button className="btn btn-sm btn-square loading"></button>
+          )}
+        </div>
       </th>
     </tr>
   );

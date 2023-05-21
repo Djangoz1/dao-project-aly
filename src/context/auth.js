@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useReducer } from "react";
 import {
+  _fetchOwner,
   _fetchWhitelist,
   _getAccount,
   _getProposals,
@@ -9,7 +10,8 @@ import {
   _getWorkflowStatus,
   _setWorkflowStatus,
 } from "../utils";
-import { WORKFLOW_STATUS } from "../constants";
+
+import { isUser } from "../utils/tools";
 
 // Mise en place du reducer auth
 const reducer = (currentState, newState) => {
@@ -22,6 +24,7 @@ export const AuthDispatchContext = createContext();
 
 const initialState = {
   status: "idle",
+  owner: null,
   user: null,
   proposals: null,
   whitelist: null,
@@ -46,14 +49,19 @@ export const doWhitelistState = async (dispatch) => {
     });
   }
 };
-export const doUserState = async (dispatch) => {
+export const doUserState = async (dispatch, _owner) => {
   dispatch({ status: "pending" });
   const _address = await _getAccount();
+  const _isOwner = isUser(_owner, _address);
 
   if (_address) {
     const _voter = await _getVoter(_address);
 
-    dispatch({ user: { address: _address, voter: _voter }, error: null });
+    dispatch({
+      user: { address: _address, voter: _voter, owner: _isOwner },
+      error: null,
+    });
+
     // localStorage.setItem("minecube_auth", JSON.stringify(initialState));
   } else {
     dispatch({
@@ -62,6 +70,22 @@ export const doUserState = async (dispatch) => {
     });
   }
 };
+
+export const doOwnerState = async (dispatch) => {
+  dispatch({ status: "pending" });
+  const _owner = await _fetchOwner();
+
+  if (_owner) {
+    dispatch({ owner: _owner, error: null });
+    return _owner;
+  } else {
+    dispatch({
+      status: "rejected",
+      error: "Something went wrong during fetching owner",
+    });
+  }
+};
+
 export const doVotersState = async (dispatch, _whitelist) => {
   dispatch({ status: "pending" });
   if (_whitelist?.length > 0) {
@@ -85,6 +109,7 @@ export const doProposalsState = async (dispatch) => {
   try {
     const _proposals = await _getProposals();
     dispatch({ proposals: _proposals, error: null });
+    return _proposals;
   } catch (error) {
     dispatch({
       status: "rejected",
@@ -97,8 +122,8 @@ export const doWorkflowStatusState = async (dispatch) => {
   dispatch({ status: "pending" });
 
   const _statusId = await _getWorkflowStatus();
-  if (_statusId) {
-    dispatch({ workflowStatus: WORKFLOW_STATUS[_statusId], error: null });
+  if (_statusId >= 0) {
+    dispatch({ workflowStatus: _statusId, error: null });
   } else {
     dispatch({
       status: "rejected",
@@ -110,12 +135,12 @@ export const doWorkflowStatusState = async (dispatch) => {
 export const setWorkflowStatusState = async (dispatch, _newStatusId) => {
   dispatch({ status: "pending" });
   try {
-    const _previousStatusId = _newStatusId === 0 ? 0 : _newStatusId - 1;
-    const _status = await _setWorkflowStatus(_previousStatusId, _newStatusId);
-    if (!_status.ok) {
-      throw new Error("Something went wrong during setting workflorw status");
+    if (_newStatusId <= 0) {
+      return;
     }
-    dispatch({ workflowStatus: WORKFLOW_STATUS[_newStatusId], error: null });
+    const _previousStatusId = _newStatusId - 1;
+    const _status = await _setWorkflowStatus(_previousStatusId, _newStatusId);
+    await _status.wait();
   } catch (error) {
     dispatch({
       status: "rejected",
@@ -123,30 +148,6 @@ export const setWorkflowStatusState = async (dispatch, _newStatusId) => {
     });
   }
 };
-
-// export const doCreateUserState = async (dispatch, dataUser, dataProfile) => {
-//   dispatch({ status: "pending" });
-//   const req = await createUser(dataUser);
-//   console.log("create user", req);
-//   if (req?.id) {
-//     const reqProfile = await updateProfileById(req?.profile?.id, {
-//       name: dataProfile.name,
-//       wallet_id: dataProfile.wallet_id,
-//     });
-//     if (reqProfile?.id) {
-//       doLoginState(dispatch, dataUser.email, dataUser?.password);
-//     }
-//   } else {
-//     dispatch({ status: "error", error: "Failed to register.", user: null });
-//   }
-// };
-
-// export const doLogoutState = (dispatch) => {
-//   localStorage.removeItem("minecube_auth");
-//   dispatch(initialState);
-
-//   // history.push("/");
-// };
 
 // Mise à disposition des fonctions à réutiliser dans les components
 export const useAuthState = () => {
