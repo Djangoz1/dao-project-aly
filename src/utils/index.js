@@ -23,8 +23,9 @@ export const _fetchOwner = async () => {
       Voting.abi,
       provider
     );
+
+    const owner = await contract.owner();
     try {
-      const owner = await contract.owner();
       if (!contract) {
         throw new Error("Contrat inaccessible");
       }
@@ -77,12 +78,13 @@ export const _setWhitelist = async (_address) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+
     try {
       let overrides = {
         from: _accounts[0],
       };
 
-      const _transaction = await contract.addWhitelistAddress(
+      const _transaction = await contract.addWhitelistedAddress(
         _address,
         overrides
       );
@@ -98,6 +100,7 @@ export const _getWorkflowStatus = async () => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+
     try {
       const _status = await contract.defaultStatus();
 
@@ -205,14 +208,11 @@ export const _votingProposal = async (_proposalId) => {
     const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
 
     try {
-      //   if (!_description) {
-      //     throw new Error("You must add description");
-      //   }
       let overrides = {
         from: _accounts[0],
       };
 
-      const _proposals = await contract.voteProposal(_proposalId, overrides);
+      const _proposals = await contract.settingVote(_proposalId, overrides);
       await _proposals.wait();
     } catch (err) {
       return err;

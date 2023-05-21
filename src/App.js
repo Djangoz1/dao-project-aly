@@ -30,12 +30,14 @@ function App() {
 
   useEffect(() => {
     if (!owner && !user) {
-      doOwnerState(dispatch).then((_owner) => doUserState(dispatch, _owner));
+      doOwnerState(dispatch).then(
+        (_owner) => _owner && doUserState(dispatch, _owner)
+      );
     }
   }, [owner, user?.address]);
 
   return (
-    <div className="bg-blue-900 min-h-screen w-screen">
+    <div className="bg-blue-900 min-h-screen w-screen overflow-x-hidden">
       <header className="flex items-center justify-between w-[90%] mx-auto pt-[4vh]">
         <h1>DAO Project</h1>
         <ConnectBtn user={isUser} setter={() => doUserState(dispatch)} />

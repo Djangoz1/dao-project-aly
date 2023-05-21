@@ -7,7 +7,10 @@ export const InputProposal = () => {
   const dispatch = useAuthDispatch();
   const handleSubmitProposal = () => {
     if (inputProposal.length > 2) {
-      _setProposals(inputProposal).then(() => doProposalsState(dispatch));
+      _setProposals(inputProposal).then(() => {
+        doProposalsState(dispatch);
+        setInputProposal("");
+      });
     }
   };
   return (
@@ -21,6 +24,7 @@ export const InputProposal = () => {
         </button>
         <input
           type="text"
+          value={inputProposal}
           onChange={(e) => setInputProposal(e.target.value)}
           placeholder="Description"
           className="input  input-bordered"

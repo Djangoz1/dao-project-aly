@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = "0xdbC43Ba45381e02825b14322cDdd15eC4B3164E6";
+export const CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
 
 export const WORKFLOW_STATUS = [
   "Registering Voters",
