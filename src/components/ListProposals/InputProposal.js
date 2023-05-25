@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import { _setProposals } from "../../utils";
-import { doProposalsState, useAuthDispatch } from "../../context/auth";
+import {
+  doProposalsState,
+  useAuthDispatch,
+  useAuthState,
+} from "../../context/auth";
 
 export const InputProposal = () => {
   const [inputProposal, setInputProposal] = useState();
   const dispatch = useAuthDispatch();
+  const { targetContract } = useAuthState();
   const handleSubmitProposal = () => {
     if (inputProposal.length > 2) {
-      _setProposals(inputProposal).then(() => {
-        doProposalsState(dispatch);
+      _setProposals(inputProposal, targetContract).then(() => {
+        doProposalsState(dispatch, targetContract);
         setInputProposal("");
       });
     }

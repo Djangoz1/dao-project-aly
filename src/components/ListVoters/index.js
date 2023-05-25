@@ -1,5 +1,6 @@
 import {
   doVotersState,
+  doWhitelistState,
   useAuthDispatch,
   useAuthState,
 } from "../../context/auth";
@@ -8,13 +9,16 @@ import React, { useEffect } from "react";
 import { Voter } from "./Voter";
 
 export const ListVoters = ({ user }) => {
-  const { whitelist, voters } = useAuthState();
+  const { whitelist, voters, targetContract } = useAuthState();
   const dispatch = useAuthDispatch();
   useEffect(() => {
-    if (whitelist && !voters) {
-      doVotersState(dispatch, whitelist);
+    if (targetContract) {
+      // doWhitelistState(dispatch, targetContract).then((e) =>
+      //   // doVotersState(dispatch, whitelist, targetContract)
+      // );
+      doWhitelistState(dispatch, targetContract);
     }
-  }, [whitelist]);
+  }, [targetContract]);
 
   return (
     <div className="overflow-x-visible relative">

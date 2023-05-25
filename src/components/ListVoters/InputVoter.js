@@ -1,13 +1,18 @@
 import React, { useState } from "react";
 import { _setWhitelist } from "../../utils";
-import { doWhitelistState, useAuthDispatch } from "../../context/auth";
+import {
+  doWhitelistState,
+  useAuthDispatch,
+  useAuthState,
+} from "../../context/auth";
 
 export const InputVoter = () => {
+  const { targetContract } = useAuthState();
   const [inputAddress, setInputAddress] = useState();
   const dispatch = useAuthDispatch();
   const handleSubmitAddress = async () => {
-    await _setWhitelist(inputAddress);
-    doWhitelistState(dispatch);
+    await _setWhitelist(inputAddress, targetContract);
+    doWhitelistState(dispatch, targetContract);
   };
 
   return (

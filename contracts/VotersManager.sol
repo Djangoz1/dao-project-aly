@@ -5,7 +5,7 @@ import "./ProposalsManager.sol";
 
 // * Contrat voters
 // ? Le contrat hérite des propositions pour qu'un voter puissent voter pour la proposition qu'il a choisi
-// ! WorkflowStatusManager ait hérité depuis ProposalsManager
+// ! WorkflowStatusManager est hérité depuis ProposalsManager
 contract VotersManager is ProposalsManager {
     // ? Les informations d'un voter (d'une address) est si elle est enregistrer, si elle a voté et qui elle a voté
     struct Voter {
@@ -19,6 +19,7 @@ contract VotersManager is ProposalsManager {
     // ? Modifier qui s'assure que l'address est bien dans la liste des voters
     modifier voterAccess() {
         require(voters[msg.sender].isRegistered, "you're not registred");
+
         _;
     }
 

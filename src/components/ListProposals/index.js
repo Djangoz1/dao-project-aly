@@ -13,7 +13,7 @@ import { _CHECK_STATUS_VOTE_OPEN } from "../../constants";
 export const ListProposals = ({ user }) => {
   const dispatch = useAuthDispatch();
   const [totalVote, setTotalVote] = useState(0);
-  const { proposals, workflowStatus } = useAuthState();
+  const { proposals, workflowStatus, targetContract } = useAuthState();
   const [voteIsOpen, setVoteIsOpen] = useState(false);
 
   useEffect(() => {
@@ -22,6 +22,7 @@ export const ListProposals = ({ user }) => {
       setVoteIsOpen(access);
     }
   }, [workflowStatus]);
+
   useEffect(() => {
     if (proposals) {
       let total = 0;
@@ -35,7 +36,7 @@ export const ListProposals = ({ user }) => {
   return (
     <div className="overflow-x-auto relative">
       <table className="table  w-full">
-        <thead onClick={() => doProposalsState(dispatch)}>
+        <thead onClick={() => doProposalsState(dispatch, targetContract)}>
           <tr>
             {voteIsOpen && <th></th>}
             <th>Description</th>

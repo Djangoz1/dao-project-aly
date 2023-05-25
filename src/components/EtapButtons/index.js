@@ -1,21 +1,22 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { WORKFLOW_STATUS } from "../../constants";
 import {
   doWorkflowStatusState,
-  setWorkflowStatusState,
   useAuthDispatch,
   useAuthState,
 } from "../../context/auth";
+import { _setWorkflowStatus } from "../../utils";
 
-export const EtapButton = ({ user }) => {
-  const { workflowStatus } = useAuthState();
+export const EtapButton = () => {
+  const { targetContract, workflowStatus, user } = useAuthState();
   const dispatch = useAuthDispatch();
 
   const handleChangeStatus = async (_newStatusId) => {
-    await setWorkflowStatusState(dispatch, _newStatusId);
-    doWorkflowStatusState(dispatch);
+    await _setWorkflowStatus(_newStatusId - 1, _newStatusId, targetContract);
+
+    doWorkflowStatusState(dispatch, targetContract);
   };
 
   const manageWorkflowStatus = (_index) => {
@@ -27,12 +28,12 @@ export const EtapButton = ({ user }) => {
   };
 
   return (
-    <div className="btn-group btn-group-vertical">
+    <div className="btn-group btn-group-horizontal overflow-x-scroll ">
       {WORKFLOW_STATUS?.map((e, i) => (
         <button
           className={`btn ${
             user?.owner && " cursor-default"
-          } btn-xs ${manageWorkflowStatus(i)}`}
+          } btn-sm ${manageWorkflowStatus(i)}`}
           key={uuidv4()}
           onClick={() => (user?.owner ? handleChangeStatus(i) : null)}
         >

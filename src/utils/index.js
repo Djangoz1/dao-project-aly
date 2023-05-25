@@ -1,6 +1,7 @@
-import { CONTRACT_ADDRESS } from "../constants";
 import Voting from "../artifacts/contracts/Voting.sol/Voting.json";
 import { ethers } from "ethers";
+import VotingFactory from "../artifacts/contracts/VotingFactory.sol/VotingFactory.json";
+import { CONTRACT_ADDRESS } from "../constants";
 
 export const _getAccount = async () => {
   if (typeof window.ethereum !== "undefined") {
@@ -15,14 +16,45 @@ export const _getAccount = async () => {
   }
 };
 
-export const _fetchOwner = async () => {
+export const _getContractFactory = async () => {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const contract = new ethers.Contract(
       CONTRACT_ADDRESS,
-      Voting.abi,
+      VotingFactory.abi,
       provider
     );
+
+    try {
+      const votingFactory = await contract.getAllVotingContracts();
+
+      return votingFactory;
+    } catch (err) {
+      return err;
+    }
+  }
+};
+
+export const _setContractFactory = async (_address) => {
+  if (typeof window.ethereum !== "undefined") {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(_address, VotingFactory.abi, signer);
+
+    try {
+      const votingFactory = await contract.createVotingContract();
+      console.log("test", votingFactory);
+      await votingFactory.wait();
+    } catch (err) {
+      return err;
+    }
+  }
+};
+
+export const _fetchOwner = async (_address) => {
+  if (typeof window.ethereum !== "undefined") {
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const contract = new ethers.Contract(_address, Voting.abi, provider);
 
     const owner = await contract.owner();
     try {
@@ -35,11 +67,11 @@ export const _fetchOwner = async () => {
     }
   }
 };
-export const _fetchWhitelist = async () => {
+export const _fetchWhitelist = async (_address) => {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    const contract = new ethers.Contract(_address, Voting.abi, signer);
     try {
       const _whitelist = await contract.getWhitelist();
       return _whitelist;
@@ -49,20 +81,20 @@ export const _fetchWhitelist = async () => {
   }
 };
 
-export const _getVoter = async (_address) => {
+export const _getVoter = async (_address, _contract) => {
   if (typeof window.ethereum !== "undefined") {
     let _accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
-    try {
-      let overrides = {
-        from: _accounts[0],
-      };
+    const contract = new ethers.Contract(_contract, Voting.abi, signer);
 
-      const _voter = await contract.getVoter(_address, overrides);
+    try {
+      // let overrides = { from: _accounts[0] };
+
+      const _voter = await contract.getVoter(_address);
+
       return _voter;
     } catch (err) {
       return err;
@@ -70,14 +102,14 @@ export const _getVoter = async (_address) => {
   }
 };
 
-export const _setWhitelist = async (_address) => {
+export const _setWhitelist = async (_address, _contract) => {
   if (typeof window.ethereum !== "undefined") {
     let _accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    const contract = new ethers.Contract(_contract, Voting.abi, signer);
 
     try {
       let overrides = {
@@ -95,15 +127,14 @@ export const _setWhitelist = async (_address) => {
   }
 };
 
-export const _getWorkflowStatus = async () => {
+export const _getWorkflowStatus = async (_address) => {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    const contract = new ethers.Contract(_address, Voting.abi, signer);
 
     try {
       const _status = await contract.defaultStatus();
-
       return _status;
     } catch (err) {
       return err;
@@ -111,14 +142,18 @@ export const _getWorkflowStatus = async () => {
   }
 };
 
-export const _setWorkflowStatus = async (_previousStatusId, _newStatusId) => {
+export const _setWorkflowStatus = async (
+  _previousStatusId,
+  _newStatusId,
+  _address
+) => {
   if (typeof window.ethereum !== "undefined") {
     let _accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    const contract = new ethers.Contract(_address, Voting.abi, signer);
 
     try {
       let _transaction;
@@ -146,14 +181,15 @@ export const _setWorkflowStatus = async (_previousStatusId, _newStatusId) => {
     }
   }
 };
-export const _setProposals = async (_description) => {
+export const _setProposals = async (_description, _address) => {
   if (typeof window.ethereum !== "undefined") {
     let _accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    const contract = new ethers.Contract(_address, Voting.abi, signer);
+    console.log("fdep", contract);
 
     try {
       if (!_description) {
@@ -165,6 +201,7 @@ export const _setProposals = async (_description) => {
       };
 
       const _transaction = await contract.addProposal(_description, overrides);
+      console.log("t iun dpfd", _transaction);
 
       await _transaction.wait();
     } catch (err) {
@@ -172,24 +209,14 @@ export const _setProposals = async (_description) => {
     }
   }
 };
-export const _getProposals = async () => {
+export const _getProposals = async (_address) => {
   if (typeof window.ethereum !== "undefined") {
-    let _accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+
+    const contract = new ethers.Contract(_address, Voting.abi, provider);
 
     try {
-      //   if (!_description) {
-      //     throw new Error("You must add description");
-      //   }
-      let overrides = {
-        from: _accounts[0],
-      };
-
-      const _proposals = await contract.getProposals(overrides);
+      const _proposals = await contract.getProposals();
 
       return _proposals;
     } catch (err) {
@@ -198,14 +225,14 @@ export const _getProposals = async () => {
   }
 };
 
-export const _votingProposal = async (_proposalId) => {
+export const _votingProposal = async (_proposalId, _address) => {
   if (typeof window.ethereum !== "undefined") {
     let _accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
     });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(CONTRACT_ADDRESS, Voting.abi, signer);
+    const contract = new ethers.Contract(_address, Voting.abi, signer);
 
     try {
       let overrides = {

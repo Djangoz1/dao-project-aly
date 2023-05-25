@@ -5,9 +5,11 @@ import {
   _fetchOwner,
   _fetchWhitelist,
   _getAccount,
+  _getContractFactory,
   _getProposals,
   _getVoter,
   _getWorkflowStatus,
+  _setContractFactory,
   _setWorkflowStatus,
 } from "../utils";
 
@@ -24,7 +26,9 @@ export const AuthDispatchContext = createContext();
 
 const initialState = {
   status: "idle",
+  factory: null,
   owner: null,
+  targetContract: null,
   user: null,
   proposals: null,
   whitelist: null,
@@ -35,13 +39,11 @@ const initialState = {
 
 // Fonction appelé au moment du onClick
 
-export const doWhitelistState = async (dispatch) => {
+export const doTargetContract = async (dispatch, _contract) => {
   dispatch({ status: "pending" });
-  const result = await _fetchWhitelist();
 
-  if (result) {
-    dispatch({ whitelist: result, error: null });
-    // localStorage.setItem("minecube_auth", JSON.stringify(initialState));
+  if (_contract) {
+    dispatch({ targetContract: _contract, error: null });
   } else {
     dispatch({
       status: "rejected",
@@ -49,20 +51,44 @@ export const doWhitelistState = async (dispatch) => {
     });
   }
 };
-export const doUserState = async (dispatch, _owner) => {
+export const doVotingFactory = async (dispatch) => {
+  dispatch({ status: "pending" });
+  const result = await _getContractFactory();
+
+  if (result) {
+    dispatch({ factory: result, error: null });
+  } else {
+    dispatch({
+      status: "rejected",
+      error: "Something went wrong during fetching whitelist",
+    });
+  }
+};
+
+export const doWhitelistState = async (dispatch, targetContract) => {
+  dispatch({ status: "pending" });
+  const result = await _fetchWhitelist(targetContract);
+
+  if (result) {
+    dispatch({ whitelist: result, error: null });
+  } else {
+    dispatch({
+      status: "rejected",
+      error: "Something went wrong during fetching whitelist",
+    });
+  }
+};
+export const doUserState = async (dispatch, _owner, contract) => {
   dispatch({ status: "pending" });
   const _address = await _getAccount();
   const _isOwner = isUser(_owner, _address);
 
   if (_address) {
-    const _voter = await _getVoter(_address);
-
+    const _voter = contract ? await _getVoter(_address, contract) : null;
     dispatch({
       user: { address: _address, voter: _voter, owner: _isOwner },
       error: null,
     });
-
-    // localStorage.setItem("minecube_auth", JSON.stringify(initialState));
   } else {
     dispatch({
       status: "rejected",
@@ -71,28 +97,30 @@ export const doUserState = async (dispatch, _owner) => {
   }
 };
 
-export const doOwnerState = async (dispatch) => {
-  dispatch({ status: "pending" });
-  const _owner = await _fetchOwner();
+export const doOwnerState = async (dispatch, contract) => {
+  if (contract) {
+    dispatch({ status: "pending" });
 
-  if (_owner) {
-    dispatch({ owner: _owner, error: null });
-    return _owner;
-  } else {
-    dispatch({
-      status: "rejected",
-      error: "Something went wrong during fetching owner",
-    });
+    const _owner = contract ? await _fetchOwner(contract) : null;
+    if (_owner) {
+      dispatch({ owner: _owner, error: null });
+      return _owner;
+    } else {
+      dispatch({
+        status: "rejected",
+        error: "Something went wrong during fetching owner",
+      });
+    }
   }
 };
 
-export const doVotersState = async (dispatch, _whitelist) => {
+export const doVotersState = async (dispatch, _whitelist, contract) => {
   dispatch({ status: "pending" });
   if (_whitelist?.length > 0) {
     const _voters = [];
     for (let index = 0; index < _whitelist?.length; index++) {
       const _address = _whitelist?.[index];
-      const _voter = await _getVoter(_address);
+      const _voter = await _getVoter(_address, contract);
       _voters.push(_voter);
     }
     dispatch({ voters: _voters, error: null });
@@ -104,10 +132,11 @@ export const doVotersState = async (dispatch, _whitelist) => {
   }
 };
 
-export const doProposalsState = async (dispatch) => {
+export const doProposalsState = async (dispatch, contract) => {
   dispatch({ status: "pending" });
+  console.log("youuuuououzrioezruozeru");
   try {
-    const _proposals = await _getProposals();
+    const _proposals = await _getProposals(contract);
     dispatch({ proposals: _proposals, error: null });
     return _proposals;
   } catch (error) {
@@ -118,30 +147,13 @@ export const doProposalsState = async (dispatch) => {
   }
 };
 
-export const doWorkflowStatusState = async (dispatch) => {
+export const doWorkflowStatusState = async (dispatch, _address) => {
   dispatch({ status: "pending" });
 
-  const _statusId = await _getWorkflowStatus();
+  const _statusId = await _getWorkflowStatus(_address);
   if (_statusId >= 0) {
     dispatch({ workflowStatus: _statusId, error: null });
   } else {
-    dispatch({
-      status: "rejected",
-      error: "Something went wrong during fetching workflow status",
-    });
-  }
-};
-
-export const setWorkflowStatusState = async (dispatch, _newStatusId) => {
-  dispatch({ status: "pending" });
-  try {
-    if (_newStatusId <= 0) {
-      return;
-    }
-    const _previousStatusId = _newStatusId - 1;
-    const _status = await _setWorkflowStatus(_previousStatusId, _newStatusId);
-    await _status.wait();
-  } catch (error) {
     dispatch({
       status: "rejected",
       error: "Something went wrong during fetching workflow status",

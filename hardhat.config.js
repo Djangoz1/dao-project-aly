@@ -21,7 +21,7 @@ module.exports = {
   paths: { artifacts: "./src/artifacts" },
   networks: {
     hardhat: {
-      chainId: 31335,
+      chainId: 1337,
       // mining: {
       //   auto: true, // Désactiver l'automining
       //   interval: 2000, // Intervalle entre les blocs (en millisecondes)

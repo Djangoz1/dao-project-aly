@@ -13,16 +13,16 @@ import { _votingProposal } from "../../utils";
 export const Proposal = ({ proposal, index, user, totalVote, voteIsOpen }) => {
   const dispatch = useAuthDispatch();
 
-  const { whitelist, owner } = useAuthState();
+  const { whitelist, owner, targetContract } = useAuthState();
   const checkProposalVote = (index) => {
     const proposalId = parseHex(user?.voter?.votedProposalId?._hex);
     return proposalId === index ? true : false;
   };
   const handleVoteProposal = async (proposalId) => {
-    await _votingProposal(proposalId);
-    await doProposalsState(dispatch);
-    await doUserState(dispatch, owner);
-    await doVotersState(dispatch, whitelist);
+    await _votingProposal(proposalId, targetContract);
+    await doProposalsState(dispatch, targetContract);
+    await doUserState(dispatch, owner, targetContract);
+    await doVotersState(dispatch, whitelist, targetContract);
   };
 
   const findAverageVote = () => {

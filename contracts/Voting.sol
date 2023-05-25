@@ -16,7 +16,9 @@ contract Voting is Ownable, WhitelistManager {
     Proposal winner;
 
     //  ! constructor contract
-    constructor() {
+    constructor(address _owner) {
+        // ? L'owner est par défaut le contrat VotingFactory. Il faut donc le confier à celui qui a créer le vote
+        transferOwnership(_owner);
         // On part du principe que l'administrateur au vote fait partie des votants
         voters[msg.sender] = Voter(true, false, 0);
         whitelist.push(msg.sender);
