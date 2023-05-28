@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { WORKFLOW_STATUS } from "../../constants";
@@ -11,16 +11,49 @@ import { _setWorkflowStatus } from "../../utils";
 import Voting from "artifacts/contracts/Voting.sol/Voting.json";
 import { ethers } from "ethers";
 import { AlertEvent } from "components/AlertEvent";
+import { AlertError } from "components/AlertEvent/AlertError";
 
 export const EtapButton = () => {
-  const { targetContract, workflowStatus, user } = useAuthState();
+  const { targetContract, workflowStatus, user, whitelist, proposals, voters } =
+    useAuthState();
   const dispatch = useAuthDispatch();
   const [event, setEvent] = useState(null);
-  const handleChangeStatus = async (_newStatusId) => {
-    await _setWorkflowStatus(_newStatusId - 1, _newStatusId, targetContract);
+  const [error, setError] = useState(null);
 
-    getEvent();
-    doWorkflowStatusState(dispatch, targetContract);
+  useEffect(() => {
+    if (targetContract) {
+      doWorkflowStatusState(dispatch, targetContract);
+    }
+  }, [targetContract]);
+
+  const handleChangeStatus = async (_newStatusId) => {
+    const result = await _setWorkflowStatus(
+      _newStatusId - 1,
+      _newStatusId,
+      targetContract
+    );
+
+    if (result?.message) {
+      let counterVote = 0;
+      voters?.map((voter) => (voter?.hasVoted ? counterVote++ : null));
+
+      if (whitelist.length <= 2) {
+        setError("changeStatus. Please add at least 3 whitelist address.");
+      } else if (proposals.length < 2) {
+        setError(
+          "changeStatus. Please wait at least 2 proposals for close proposals registration."
+        );
+      } else if (counterVote <= 2) {
+        setError(
+          "changeStatus. Please wait at least 3 votes for close vote registration."
+        );
+      } else {
+        setError("changeStatus. Please verify if you're the owner.");
+      }
+    } else {
+      getEvent();
+      doWorkflowStatusState(dispatch, targetContract);
+    }
   };
 
   const manageWorkflowStatus = (_index) => {
@@ -51,7 +84,6 @@ export const EtapButton = () => {
           } btn-xs ${manageWorkflowStatus(i)}`}
           key={uuidv4()}
           onClick={() => handleChangeStatus(i)}
-          // onClick={() => (user?.owner ? handleChangeStatus(i) : null)}
         >
           {e}
         </button>
@@ -74,6 +106,7 @@ export const EtapButton = () => {
           setEvent={setEvent}
         />
       )}
+      {error && <AlertError error={error} setError={setError} />}
     </div>
   );
 };

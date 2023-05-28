@@ -1,15 +1,32 @@
-# Basic Sample Hardhat Project
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts.
+#### Par avance pardon pour mon code qui manque sans doute un peu d'organisation.
+ - Vous pouvez retrouver le contrat tel qu'il était demandé (et monolithique) dans le dossier `contracts/original/Voting.sol`
+ - Pour aller plus loin, j'ai créer une dapp en essayant une modularité dans mes fichiers contrats et j'ai mis en place une "usine de contrat voting". C'est cette usine qu'hardhat déploie et la dapp s'occupe de déployer les contrats voting.
 
-Try running some of the following tasks:
+### 1.  Pour accéder à la dapp, commencé par initier le noeud hardhat :
+- `npx hardhat node` 
+***
 
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-node scripts/sample-script.js
-npx hardhat help
-```
+### 2. Puis déployer le contrat :
+- `npx hardhat run scripts/deploy.js --network localhost`
+
+Le contrat déployer est `FactoryVoting.sol`. Ce contrat permet de multiplier le déploiement du contrat `Voting.sol` afin d'avoir plusieurs session de vote.
+***
+
+### 3. Ensuite modifier l'address du contrat déployer de `CONTRACT_ADDRESS` dans `constants/index.js`
+
+Une fois cela fait, vous pouvez lancer la dApp `npm run start`
+
+***
+
+## Quelques conditions
+
+**Pour déployer un nouveau contrat voting** : *Il n'y a aucune condition.*
+
+**Pour ajouter quelqu'un à la whitelist** : *Il faut être le owner.*
+
+**Pour passer à l'étape `ProposalsRegistrationStarted`** : *Il faut au moins **3 whitelistés** pour que le vote soit pertinent et qu'une majorité puisse (potentiellement) se dégager.*
+
+**Pour passer à l'étape `ProposalsRegistrationEnded`** : *Il faut au moins 2 propositions pour qu'il y ait un choix et qu'une majorité puisse (potentiellement) se dégager.*
+
+**Pour passer à l'étape `VotingSessionEnded`** : *Il faut au moins 3 votes pour qu'il y ait un résultat qui soit un minimum pertinent.*

@@ -134,7 +134,7 @@ export const doVotersState = async (dispatch, _whitelist, _contract) => {
 
 export const doProposalsState = async (dispatch, contract) => {
   dispatch({ status: "pending" });
-  console.log("youuuuououzrioezruozeru");
+
   try {
     const _proposals = await _getProposals(contract);
     dispatch({ proposals: _proposals, error: null });

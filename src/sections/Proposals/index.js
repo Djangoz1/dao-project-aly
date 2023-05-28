@@ -9,6 +9,7 @@ import React, { useEffect } from "react";
 import { ListProposals } from "../../components/ListProposals";
 import { InputProposal } from "../../components/ListProposals/InputProposal";
 import { _CHECK_STATUS_PROPOSAL_OPEN } from "../../constants";
+import { trackWorkflowStatus } from "utils/tools";
 
 export const Proposals = () => {
   const { workflowStatus, targetContract, user } = useAuthState();
@@ -22,13 +23,14 @@ export const Proposals = () => {
 
   return (
     <div className="flex mt-[4vh] flex-col ">
-      {_CHECK_STATUS_PROPOSAL_OPEN(workflowStatus) ? (
-        <InputProposal />
-      ) : (
-        <p className="my-5 font-black text-white">
-          Registration proposal is closed
-        </p>
-      )}
+      <h3 className="text-left text-2xl text-white uppercase font-black">
+        Proposals{" "}
+        <span className="text-sm text-gray-500 font-light capitalize">
+          {trackWorkflowStatus(workflowStatus, "proposals")}{" "}
+        </span>
+      </h3>
+
+      {_CHECK_STATUS_PROPOSAL_OPEN(workflowStatus) && <InputProposal />}
       {user?.voter?.isRegistered && <ListProposals />}
     </div>
   );
