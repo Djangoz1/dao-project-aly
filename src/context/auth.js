@@ -3,7 +3,7 @@
 import { createContext, useContext, useReducer } from "react";
 import {
   _fetchOwner,
-  _fetchWhitelist,
+  _getWhitelist,
   _getAccount,
   _getContractFactory,
   _getProposals,
@@ -67,9 +67,9 @@ export const doVotingFactory = async (dispatch) => {
 
 export const doWhitelistState = async (dispatch, targetContract) => {
   dispatch({ status: "pending" });
-  const result = await _fetchWhitelist(targetContract);
+  const result = await _getWhitelist(targetContract);
 
-  if (result) {
+  if (!result.message) {
     dispatch({ whitelist: result, error: null });
   } else {
     dispatch({
@@ -114,13 +114,13 @@ export const doOwnerState = async (dispatch, contract) => {
   }
 };
 
-export const doVotersState = async (dispatch, _whitelist, contract) => {
+export const doVotersState = async (dispatch, _whitelist, _contract) => {
   dispatch({ status: "pending" });
   if (_whitelist?.length > 0) {
     const _voters = [];
     for (let index = 0; index < _whitelist?.length; index++) {
       const _address = _whitelist?.[index];
-      const _voter = await _getVoter(_address, contract);
+      const _voter = await _getVoter(_address, _contract);
       _voters.push(_voter);
     }
     dispatch({ voters: _voters, error: null });
@@ -151,6 +151,7 @@ export const doWorkflowStatusState = async (dispatch, _address) => {
   dispatch({ status: "pending" });
 
   const _statusId = await _getWorkflowStatus(_address);
+
   if (_statusId >= 0) {
     dispatch({ workflowStatus: _statusId, error: null });
   } else {

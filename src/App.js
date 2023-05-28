@@ -8,63 +8,60 @@ import {
   doOwnerState,
   doUserState,
   doVotingFactory,
-  doWorkflowStatusState,
   useAuthDispatch,
   useAuthState,
 } from "./context/auth";
-import { ethers } from "ethers";
 
-import VotingFactory from "./artifacts/contracts/VotingFactory.sol/VotingFactory.json";
 import { Factory } from "./sections/Factory";
-import { _getContractFactory } from "./utils";
+
 import { EtapButton } from "./components/EtapButtons";
-import { InputVoter } from "./components/ListVoters/InputVoter";
 
 function App() {
-  const { user, owner, workflowStatus, factory, targetContract } =
-    useAuthState();
+  const { user, factory, targetContract, error } = useAuthState();
   const dispatch = useAuthDispatch();
   const [isUser, setIsUser] = useState();
+  console.log(error);
   useEffect(() => {
     if (user) {
       setIsUser(user);
     }
   }, [user]);
 
-  // useEffect(() => {
-  //   if (!workflowStatus >= 0) {
-  //     doWorkflowStatusState(dispatch);
-  //   }
-  // }, [workflowStatus]);
-
   useEffect(() => {
-    doOwnerState(dispatch, targetContract).then(
-      () => owner && doUserState(dispatch, owner, targetContract)
-    );
+    doOwnerState(dispatch, targetContract).then((_owner) => {
+      doUserState(dispatch, _owner, targetContract);
+    });
   }, [targetContract]);
 
   useEffect(() => {
     if (!factory) doVotingFactory(dispatch);
   }, [factory]);
 
-  // useEffect(() => {
-  //   if (!workflowStatus >= 0) {
-  //     doWorkflowStatusState(dispatch);
-  //   }
-  // }, [workflowStatus]);
-
   return (
     <div className="bg-gradient-to-r from-indigo-900 to-indigo-600 min-h-screen  w-screen ">
       <header className="flex items-center justify-between w-[90%] mx-auto pt-[4vh]">
-        <h1 className="primary-font flex flex-col font-black text-2xl text-shadow text-white">
-          DAO Project
+        <div className="flex flex-col">
+          <h1 className="primary-font  font-black text-2xl text-shadow text-white flex">
+            D
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="w-[30px]  h-[30px] -mx-1"
+              viewBox="0 0 320 512"
+            >
+              <path d="M311.9 260.8L160 353.6 8 260.8 160 0l151.9 260.8zM160 383.4L8 290.6 160 512l152-221.4-152 92.8z" />
+            </svg>
+            O Project
+          </h1>
           <span className="text-[8px] text-gray-400"> {CONTRACT_ADDRESS}</span>
-        </h1>
+        </div>
         <ConnectBtn user={isUser} setter={() => doUserState(dispatch)} />
       </header>
       <div className="mt-[2vh] w-[95%] h-[80vh] flex  mx-auto shadow-2xl text-center rounded-lg overflow-hidden bg-zinc-950">
         <Factory />
         <div className="flex flex-col h-full overlflow-y-scroll relative w-full">
+          <div className="bg-zinc-700 w-full p-2 text-white">
+            Voting contract manager
+          </div>
           {targetContract ? (
             <>
               <div className="m-5 ">

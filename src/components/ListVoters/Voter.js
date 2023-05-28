@@ -1,26 +1,15 @@
-import React, { useEffect, useState } from "react";
 import { useAuthState } from "../../context/auth";
 import { IcCheck, IcCross } from "../../assets/icones";
 import { isUser } from "../../utils/tools";
 import { _CHECK_STATUS_VOTE_OPEN } from "../../constants";
-import { _getVoter } from "../../utils";
 
-export const Voter = ({ address, user }) => {
-  const [voter, setVoter] = useState({});
-
-  const { whitelist, targetContract } = useAuthState();
+export const Voter = ({ address, user, voter }) => {
   const proposalVote =
     voter?.votedProposalId?._hex?.[voter?.votedProposalId?._hex?.length - 1];
   const { proposals, workflowStatus } = useAuthState();
 
   const voterChoice = proposals?.[proposalVote];
 
-  useEffect(() => {
-    if (targetContract) {
-      const result = _getVoter(address, targetContract);
-      setVoter(result);
-    }
-  }, [whitelist, targetContract]);
   return (
     <tr className="text-xs relative">
       <th
@@ -42,9 +31,12 @@ export const Voter = ({ address, user }) => {
         )}
       </td>
 
-      <div className="absolute -right-1 -top-3">
-        {voter?.hasVoted ? <IcCheck /> : null}
-      </div>
+      {voter?.hasVoted ? (
+        <div className="absolute -right-1 -top-3">
+          {voter?.address}
+          <IcCheck />
+        </div>
+      ) : null}
     </tr>
   );
 };

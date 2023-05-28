@@ -20,8 +20,8 @@ contract Voting is Ownable, WhitelistManager {
         // ? L'owner est par défaut le contrat VotingFactory. Il faut donc le confier à celui qui a créer le vote
         transferOwnership(_owner);
         // On part du principe que l'administrateur au vote fait partie des votants
-        voters[msg.sender] = Voter(true, false, 0);
-        whitelist.push(msg.sender);
+        voters[_owner] = Voter(true, false, 0);
+        whitelist.push(_owner);
         numberVoters++;
         // ? Ouvrir l'inscription au vote dès le déploiement
         emit WorkflowStatusChange(

@@ -35,15 +35,17 @@ export const _getContractFactory = async () => {
   }
 };
 
-export const _setContractFactory = async (_address) => {
+export const _setContractFactory = async () => {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
-    const contract = new ethers.Contract(_address, VotingFactory.abi, signer);
-
+    const contract = new ethers.Contract(
+      CONTRACT_ADDRESS,
+      VotingFactory.abi,
+      signer
+    );
     try {
       const votingFactory = await contract.createVotingContract();
-      console.log("test", votingFactory);
       await votingFactory.wait();
     } catch (err) {
       return err;
@@ -67,7 +69,7 @@ export const _fetchOwner = async (_address) => {
     }
   }
 };
-export const _fetchWhitelist = async (_address) => {
+export const _getWhitelist = async (_address) => {
   if (typeof window.ethereum !== "undefined") {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
@@ -83,16 +85,11 @@ export const _fetchWhitelist = async (_address) => {
 
 export const _getVoter = async (_address, _contract) => {
   if (typeof window.ethereum !== "undefined") {
-    let _accounts = await window.ethereum.request({
-      method: "eth_requestAccounts",
-    });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
-    const signer = provider.getSigner();
-    const contract = new ethers.Contract(_contract, Voting.abi, signer);
+
+    const contract = new ethers.Contract(_contract, Voting.abi, provider);
 
     try {
-      // let overrides = { from: _accounts[0] };
-
       const _voter = await contract.getVoter(_address);
 
       return _voter;
@@ -189,20 +186,15 @@ export const _setProposals = async (_description, _address) => {
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = provider.getSigner();
     const contract = new ethers.Contract(_address, Voting.abi, signer);
-    console.log("fdep", contract);
 
     try {
       if (!_description) {
         throw new Error("You must add description");
       }
-
       let overrides = {
         from: _accounts[0],
       };
-
       const _transaction = await contract.addProposal(_description, overrides);
-      console.log("t iun dpfd", _transaction);
-
       await _transaction.wait();
     } catch (err) {
       return err;

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   doTargetContract,
   doVotingFactory,
-  doWorkflowStatusState,
   useAuthDispatch,
   useAuthState,
 } from "../../context/auth";
@@ -18,16 +17,11 @@ export const Factory = () => {
   const dispatch = useAuthDispatch();
 
   return (
-    <div className="w-2/5 bg-gray-950 h-full relative ">
-      <button
-        onClick={() =>
-          _setContractFactory().then((e) => doVotingFactory(dispatch))
-        }
-        className="btn"
-      >
-        Add vote
-      </button>
-      <div className={`flex flex-col h-full overflow-y-scroll`}>
+    <div className="w-2/5 bg-gray-950 h-full relative  ">
+      <div className="bg-zinc-800 w-full p-2 text-white">
+        Voting pool contracts
+      </div>
+      <div className={`flex flex-col h-full box-border p-4  overflow-y-scroll`}>
         {factory?.length > 0 ? (
           factory?.map((e) => <ElementFactory key={e} contract={e} />)
         ) : (
@@ -35,6 +29,14 @@ export const Factory = () => {
             Please add a vote
           </p>
         )}
+        <button
+          onClick={() =>
+            _setContractFactory().then((e) => doVotingFactory(dispatch))
+          }
+          className="btn btn-sm btn-primary w-1/2 mx-auto mt-4"
+        >
+          Add vote
+        </button>
       </div>
     </div>
   );
@@ -69,10 +71,10 @@ const ElementFactory = ({ contract }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between border border-gray-700 text-left text-sm rounded p-4 ${
+      className={`flex flex-col justify-between border mb-2 border-gray-700 text-left text-sm rounded p-4 ${
         targetContract === contract
           ? "bg-gray-900 text-blue-600"
-          : "bg-gray-500"
+          : "bg-gray-700"
       }`}
       key={contract}
       onClick={() => handleSelectContract(contract)}

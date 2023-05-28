@@ -1,18 +1,32 @@
 import React, { useState } from "react";
-import { _setWhitelist } from "../../utils";
+import { _getEvent, _setWhitelist } from "../../utils";
+
 import {
   doWhitelistState,
   useAuthDispatch,
   useAuthState,
 } from "../../context/auth";
+import { ethers } from "ethers";
+import Voting from "artifacts/contracts/Voting.sol/Voting.json";
+import { AlertEvent } from "components/AlertEvent";
 
 export const InputVoter = () => {
   const { targetContract } = useAuthState();
   const [inputAddress, setInputAddress] = useState();
+  const [event, setEvent] = useState();
   const dispatch = useAuthDispatch();
   const handleSubmitAddress = async () => {
     await _setWhitelist(inputAddress, targetContract);
+    getEvent();
     doWhitelistState(dispatch, targetContract);
+  };
+  const getEvent = async () => {
+    if (typeof window.ethereum !== "undefined") {
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(targetContract, Voting.abi, signer);
+      contract.on("VoterRegistered", (e) => setEvent(e));
+    }
   };
 
   return (
@@ -31,6 +45,12 @@ export const InputVoter = () => {
           className="input  input-bordered"
         />
       </label>
+      {event && (
+        <AlertEvent
+          event={`Voter ${event} has been added to contract`}
+          setEvent={setEvent}
+        />
+      )}
     </div>
   );
 };

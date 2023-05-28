@@ -10,13 +10,13 @@ import { Voter } from "./Voter";
 
 export const ListVoters = ({ user }) => {
   const { whitelist, voters, targetContract } = useAuthState();
+
   const dispatch = useAuthDispatch();
   useEffect(() => {
     if (targetContract) {
-      // doWhitelistState(dispatch, targetContract).then((e) =>
-      //   // doVotersState(dispatch, whitelist, targetContract)
-      // );
-      doWhitelistState(dispatch, targetContract);
+      doWhitelistState(dispatch, targetContract).then((e) =>
+        doVotersState(dispatch, whitelist, targetContract)
+      );
     }
   }, [targetContract]);
 
