@@ -1,6 +1,8 @@
 import { parseHex } from "../../utils/tools";
 import {
   doProposalsState,
+  doUserState,
+  doVotersState,
   useAuthDispatch,
   useAuthState,
 } from "../../context/auth";
@@ -16,9 +18,8 @@ export const Proposal = ({
   voteIsOpen,
 }) => {
   const dispatch = useAuthDispatch();
-  const { user } = useAuthState();
+  const { user, whitelist, owner, targetContract } = useAuthState();
 
-  const { targetContract } = useAuthState();
   const checkProposalVote = (index) => {
     const proposalId = parseHex(user?.voter?.votedProposalId?._hex);
     return proposalId === index ? true : false;
@@ -26,6 +27,8 @@ export const Proposal = ({
   const handleVoteProposal = async (proposalId) => {
     await _votingProposal(proposalId, targetContract);
     await doProposalsState(dispatch, targetContract);
+    doVotersState(dispatch, whitelist, targetContract);
+    doUserState(dispatch, owner, targetContract);
     getEvent();
   };
 

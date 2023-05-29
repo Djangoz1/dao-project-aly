@@ -26,10 +26,6 @@ contract Voting is Ownable {
     event ProposalRegistered(uint proposalId);
     event Voted(address voter, uint proposalId);
 
-    uint numberWhitelisted;
-    uint numberVoters;
-    uint globalCounterVote;
-
     // ? Les informations d'un voter (d'une address) est si elle est enregistrer, si elle a voté et qui elle a voté
     struct Voter {
         bool isRegistered;
@@ -43,6 +39,7 @@ contract Voting is Ownable {
         uint voteCount;
     }
 
+    uint globalCounterVote;
     Proposal winner;
 
     // ? Mise en place d'une liste d'address whitelisté
@@ -58,7 +55,6 @@ contract Voting is Ownable {
         // On part du principe que l'administrateur au vote fait partie des votants
         voters[msg.sender] = Voter(true, false, 0);
         whitelist.push(msg.sender);
-        numberVoters++;
         // ? Ouvrir l'inscription au vote dès le déploiement
         emit WorkflowStatusChange(
             defaultStatus,
@@ -82,13 +78,17 @@ contract Voting is Ownable {
     }
 
     // ? Fonction factorielle de changement de status
-    function changeStatus(
+    function _changeStatus(
         WorkflowStatus _oldStatus,
         WorkflowStatus _newStatus
-    ) internal checkWorkflowStatus(_oldStatus) {
+    )
+        internal
         // S'assurer qu'on est à la bonne étape du processus de vote
-        emit WorkflowStatusChange(_oldStatus, _newStatus);
+        checkWorkflowStatus(_oldStatus)
+        onlyOwner
+    {
         defaultStatus = _newStatus;
+        emit WorkflowStatusChange(_oldStatus, _newStatus);
     }
 
     // ? Fonction getter de la whitelist
@@ -101,7 +101,7 @@ contract Voting is Ownable {
         address _address
     ) public checkWorkflowStatus(WorkflowStatus.RegisteringVoters) {
         // Vérifier que l'adress n'est pas l'address 0
-        require(_address != address(0), "Please enter a valid address");
+        require(_address != address(0), "please enter a valid address");
         // ? Utiliser le mapping voters pour récupérer directement l'address puisque les listes whitelist/voters sont identique
         require(!voters[_address].isRegistered, "address already whitelisted");
 
@@ -116,9 +116,9 @@ contract Voting is Ownable {
         // S'assurer qu'il y ait au moins 3 whitelisté qui soit enregistré (pour établir une majorité)
         require(
             whitelist.length >= 3,
-            "Not enough whitelisted address for open session"
+            "Not enough whitelisted addresses to open a proposal session"
         );
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.RegisteringVoters,
             WorkflowStatus.ProposalsRegistrationStarted
         );
@@ -130,6 +130,7 @@ contract Voting is Ownable {
     )
         external
         checkWorkflowStatus(WorkflowStatus.ProposalsRegistrationStarted)
+        voterAccess
     {
         proposals.push(Proposal(_description, 0));
         //  Étant le dernier a avoir push une proposal son id est = à ...
@@ -146,7 +147,7 @@ contract Voting is Ownable {
     function closeRegisteringSessionProposal() external onlyOwner {
         // S'assurer qu'il y ait au moins deux propositions pour fermer la session
         require(proposals.length >= 2, "Not enough proposal to proceed vote");
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.ProposalsRegistrationStarted,
             WorkflowStatus.ProposalsRegistrationEnded
         );
@@ -157,7 +158,7 @@ contract Voting is Ownable {
         // Pas de vérification nécessaire entre la fermeture des inscriptions proposals et l'ouverture des votes
         // Si ce n'est qu'on peux s'assurer que le nombre total de vote est bien à 0
         globalCounterVote = 0;
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.ProposalsRegistrationEnded,
             WorkflowStatus.VotingSessionStarted
         );
@@ -172,18 +173,26 @@ contract Voting is Ownable {
         return voters[_address];
     }
 
+    function setVote(uint _id) external {
+        _setVote(_id);
+        // Fermer la session automatiquement si tout le monde a voté
+        if (globalCounterVote == whitelist.length - 1) {
+            _closeRegisteringSessionVote();
+        }
+    }
+
     // ? On vote pour une proposition en indiquant l'id de la proposition en paramètre
-    function setVote(
+    function _setVote(
         uint _id
     )
-        external
+        internal
         voterAccess
         checkWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         // Vérifier que la proposition existe
-        require(_id < proposals.length, "This proposal doesn't exist");
+        require(_id < proposals.length, "proposal doesn't exist");
         // Vérifier que l'électeur n'a pas déjà voté
-        require(!voters[msg.sender].hasVoted, "You vote is already done");
+        require(!voters[msg.sender].hasVoted, "Your vote is already cast");
 
         // On ajoute sa voie au compteur de vote pour la proposition sélectionner
         proposals[_id].voteCount++;
@@ -193,47 +202,56 @@ contract Voting is Ownable {
         voters[msg.sender].votedProposalId = _id;
 
         globalCounterVote++;
+
+        // // _getWinner(); // Si on veux trouver le winner après chaque vote
+
         // On émet l'information de l'address qui a voté et de la proposition sélectionner
         emit Voted(msg.sender, _id);
     }
 
     // ? Fermer la session des votes
     function closeRegisteringSessionVote() external onlyOwner {
+        _closeRegisteringSessionVote();
+    }
+
+    // ? Fermer la session des votes
+    function _closeRegisteringSessionVote() internal {
         // S'assurer qu'il y ait plus de 2 votes pour que le vote ait une pertinence
         require(globalCounterVote > 2, "Not enough vote for close session");
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.VotingSessionStarted,
             WorkflowStatus.VotingSessionEnded
         );
+        // Passer immédiatement au décompte des votes dès la fermeture des votes
+        countVote();
     }
 
     // ? Décompter les votes
-    function countVote() public onlyOwner {
-        // Boucler sur toutes les propositions
-        // ! TROUVER UNE ISSUE
-        for (uint _id; _id < proposals.length; _id++) {
-            // Vérifier qu'il n y a pas deux gagnant
-            require(
-                _id == proposals.length - 1 &&
-                    proposals[_id].voteCount != winner.voteCount,
-                "two winner, we need to reload a new session"
-            );
-            // Pour récupérer celui qui a le plus grand nombre de vote
-            if (winner.voteCount < proposals[_id].voteCount) {
-                winner = proposals[_id];
-            }
-        }
-        emit WorkflowStatusChange(
+    function countVote() internal onlyOwner {
+        _getWinner();
+        _changeStatus(
             WorkflowStatus.VotingSessionEnded,
             WorkflowStatus.VotesTallied
         );
     }
 
+    // ? Fonction getter du gagnant exécuté à la fin de la session des votes
+    function _getWinner() internal {
+        // Boucler sur toutes les propositions
+        for (uint _id; _id < proposals.length; _id++) {
+            // Pour récupérer celui qui a le plus grand nombre de vote
+            if (winner.voteCount < proposals[_id].voteCount) {
+                winner = proposals[_id];
+            }
+        }
+    }
+
     // ? Fonction getter du gagnant
     function getWinner() public view returns (Proposal memory) {
+        // Boucler sur toutes les propositions
         require(
-            defaultStatus == WorkflowStatus.VotesTallied,
-            "the count is not finish yet"
+            winner.voteCount > 0,
+            "The votes have not yet been counted, be back later"
         );
         return winner;
     }

@@ -1,28 +1,24 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.4;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
+// import "@openzeppelin/contracts/access/Ownable.sol";
 import "./WhitelistManager.sol";
 
 // * Contrat principal
-// ? Le contrat Voting hérite de Ownable et de WhitelistManager
+// ? Le contrat Voting hérite de WhitelistManager
 // ? WhitelistManager hérite lui-même du contrat VotersManager
 // ? VotersManager qui lui hérite de ProposalsManager
 // ? Tous sont organisé selon le WorkflowStatusManager
 
 // ? Il sert à annoncer les modalités du processus de vote
-contract Voting is Ownable, WhitelistManager {
-    // ? Status du processus de vote
-    Proposal winner;
-
-    //  ! constructor contract
+contract Voting is WhitelistManager {
     constructor(address _owner) {
         // ? L'owner est par défaut le contrat VotingFactory. Il faut donc le confier à celui qui a créer le vote
         transferOwnership(_owner);
         // On part du principe que l'administrateur au vote fait partie des votants
-        voters[_owner] = Voter(true, false, 0);
         whitelist.push(_owner);
-        numberVoters++;
+        voters[_owner] = Voter(true, false, 0);
+
         // ? Ouvrir l'inscription au vote dès le déploiement
         emit WorkflowStatusChange(
             defaultStatus,
@@ -30,78 +26,82 @@ contract Voting is Ownable, WhitelistManager {
         );
     }
 
+    function addProposal(
+        string memory _description
+    )
+        internal
+        voterAccess
+        checkWorkflowStatus(WorkflowStatus.ProposalsRegistrationStarted)
+    {
+        _addProposal(_description);
+    }
+
+    function settingVote(uint _id) external {
+        _settingVote(_id);
+        // Fermer la session automatiquement si tout le monde a voté
+        if (globalCounterVote == whitelist.length - 1) {
+            _closeRegisteringSessionVote();
+        }
+    }
+
     // ? Ouvrir la session des propositions
 
-    function openRegisteringSessionProposal() public onlyOwner {
+    function openRegisteringSessionProposal() external onlyOwner {
         // S'assurer qu'il y ait au moins 3 whitelisté qui soit enregistré (pour établir une majorité)
         require(
             whitelist.length >= 3,
             "Not enough whitelisted address for open session"
         );
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.RegisteringVoters,
             WorkflowStatus.ProposalsRegistrationStarted
         );
     }
 
     // ? Fermer la session des propositions
-    function closeRegisteringSessionProposal() public onlyOwner {
+    function closeRegisteringSessionProposal() external onlyOwner {
         // S'assurer qu'il y ait au moins deux propositions pour fermer la session
         require(proposals.length >= 2, "Not enough proposal to proceed vote");
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.ProposalsRegistrationStarted,
             WorkflowStatus.ProposalsRegistrationEnded
         );
     }
 
     // ? Ouvrir la session des votes
-    function openRegisteringSessionVote() public onlyOwner {
+    function openRegisteringSessionVote() external onlyOwner {
         // Pas de vérification nécessaire entre la fermeture des inscriptions proposals et l'ouverture des votes
         // Si ce n'est qu'on peux s'assurer que le nombre total de vote est bien à 0
         globalCounterVote = 0;
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.ProposalsRegistrationEnded,
             WorkflowStatus.VotingSessionStarted
         );
     }
 
     // ? Fermer la session des votes
-    function closeRegisteringSessionVote() public onlyOwner {
+    function closeRegisteringSessionVote() external onlyOwner {
+        _closeRegisteringSessionVote();
+    }
+
+    // ? Fermer la session des votes
+    function _closeRegisteringSessionVote() internal {
         // S'assurer qu'il y ait plus de 2 votes pour que le vote ait une pertinence
         require(globalCounterVote > 2, "Not enough vote for close session");
-        changeStatus(
+        _changeStatus(
             WorkflowStatus.VotingSessionStarted,
             WorkflowStatus.VotingSessionEnded
         );
+        // Passer immédiatement au décompte des votes dès la fermeture des votes
+        countVote();
     }
 
     // ? Décompter les votes
-    function countVote() public onlyOwner {
-        // Boucler sur toutes les propositions
-        for (uint _id; _id < proposals.length; _id++) {
-            // Vérifier qu'il n y a pas deux gagnant
-            require(
-                _id == proposals.length - 1 &&
-                    proposals[_id].voteCount != winner.voteCount,
-                "two winner, we need to reload a new session"
-            );
-            // Pour récupérer celui qui a le plus grand nombre de vote
-            if (winner.voteCount < proposals[_id].voteCount) {
-                winner = proposals[_id];
-            }
-        }
-        emit WorkflowStatusChange(
+    function countVote() internal onlyOwner {
+        _getWinner();
+        _changeStatus(
             WorkflowStatus.VotingSessionEnded,
             WorkflowStatus.VotesTallied
         );
-    }
-
-    // ? Fonction getter du gagnant
-    function getWinner() public view returns (Proposal memory) {
-        require(
-            defaultStatus == WorkflowStatus.VotesTallied,
-            "the count is not finish yet"
-        );
-        return winner;
     }
 }

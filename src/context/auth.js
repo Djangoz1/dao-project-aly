@@ -116,6 +116,7 @@ export const doOwnerState = async (dispatch, contract) => {
 
 export const doVotersState = async (dispatch, _whitelist, _contract) => {
   dispatch({ status: "pending" });
+
   if (_whitelist?.length > 0) {
     const _voters = [];
     for (let index = 0; index < _whitelist?.length; index++) {

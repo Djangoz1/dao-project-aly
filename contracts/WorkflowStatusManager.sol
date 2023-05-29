@@ -1,13 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.4;
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 // * Contrat workflow status
 // ? Manage status
 
-contract WorkflowStatusManager {
-    uint numberWhitelisted;
-    uint numberVoters;
-    uint globalCounterVote;
+contract WorkflowStatusManager is Ownable {
+    event WorkflowStatusChange(
+        WorkflowStatus previousStatus,
+        WorkflowStatus newStatus
+    );
 
     enum WorkflowStatus {
         RegisteringVoters,
@@ -19,16 +21,8 @@ contract WorkflowStatusManager {
     }
     WorkflowStatus public defaultStatus;
 
-    // ? Event relatif au changement de status
-    event VoterRegistered(address voter);
-    event WorkflowStatusChange(
-        WorkflowStatus previousStatus,
-        WorkflowStatus newStatus
-    );
-
-    // ? Event relatif au changement de value
-    event ProposalRegistered(uint proposalId);
-    event Voted(address voter, uint proposalId);
+    // ? ownable et globalCounterVote se place ici car WorkflowStatusManager est distribué dans tout les fichiers
+    uint globalCounterVote;
 
     // ? Faire un modifier pour s'assurer que l'on est à la bonne étape du processus
     modifier checkWorkflowStatus(WorkflowStatus _status) {
@@ -41,7 +35,7 @@ contract WorkflowStatusManager {
 
     // ? Fonction factorielle de changement de status
     // ! Est appeler par mon contrat principal
-    function changeStatus(
+    function _changeStatus(
         WorkflowStatus _oldStatus,
         WorkflowStatus _newStatus
     ) internal checkWorkflowStatus(_oldStatus) {

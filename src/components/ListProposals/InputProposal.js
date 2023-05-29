@@ -8,19 +8,25 @@ import {
 import Voting from "artifacts/contracts/Voting.sol/Voting.json";
 import { ethers } from "ethers";
 import { AlertEvent } from "components/AlertEvent";
+import { AlertError } from "components/AlertEvent/AlertError";
 
 export const InputProposal = () => {
   const [inputProposal, setInputProposal] = useState();
   const dispatch = useAuthDispatch();
+  const [error, setError] = useState();
 
   const { targetContract, proposals } = useAuthState();
   const handleSubmitProposal = () => {
-    if (inputProposal.length > 2) {
+    if (inputProposal?.length > 2) {
       _setProposals(inputProposal, targetContract).then(() => {
         getEvent();
         doProposalsState(dispatch, targetContract);
         setInputProposal("");
       });
+    } else {
+      setError(
+        "addProposal. Please add at least 2 characters for your proposal."
+      );
     }
   };
 
@@ -59,6 +65,7 @@ export const InputProposal = () => {
           setEvent={setEvent}
         />
       )}
+      {error && <AlertError error={error} setError={setError} />}
     </>
   );
 };

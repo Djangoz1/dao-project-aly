@@ -2,13 +2,12 @@ import { useEffect, useState } from "react";
 import { ConnectBtn } from "./components/ConnectBtn";
 
 import { Voters } from "./sections/Voters";
-import { CONTRACT_ADDRESS } from "./constants";
+import { CONTRACT_ADDRESS, WORKFLOW_STATUS } from "./constants";
 import { Proposals } from "./sections/Proposals";
 import {
   doOwnerState,
   doUserState,
   doVotingFactory,
-  doWorkflowStatusState,
   useAuthDispatch,
   useAuthState,
 } from "./context/auth";
@@ -16,12 +15,14 @@ import {
 import { Factory } from "./sections/Factory";
 
 import { EtapButton } from "./components/EtapButtons";
+import { _getWinner } from "utils";
+import { Winner } from "sections/Winner";
 
 function App() {
-  const { user, factory, targetContract, error } = useAuthState();
+  const { user, factory, targetContract, workflowStatus } = useAuthState();
   const dispatch = useAuthDispatch();
   const [isUser, setIsUser] = useState();
-  console.log(error);
+
   useEffect(() => {
     if (user) {
       setIsUser(user);
@@ -69,6 +70,7 @@ function App() {
                 <EtapButton user={user} />
               </div>
               <div className="h-full overflow-y-scroll px-5 pb-5 box-border">
+                {workflowStatus === WORKFLOW_STATUS.length - 1 && <Winner />}
                 <Voters />
                 <Proposals user={isUser} />
               </div>

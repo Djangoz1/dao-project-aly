@@ -71,7 +71,7 @@ const ElementFactory = ({ contract }) => {
 
   return (
     <div
-      className={`flex flex-col justify-between border mb-2 border-gray-700 text-left text-sm rounded p-4 ${
+      className={`flex flex-col overflow-hidden justify-between border mb-2 border-gray-700 text-left text-sm rounded p-4 ${
         targetContract === contract
           ? "bg-gray-900 text-blue-600"
           : "bg-gray-700"

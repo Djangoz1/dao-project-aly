@@ -72,6 +72,7 @@ export const ListProposals = ({ user }) => {
                 proposal={e}
                 user={user}
                 index={i}
+                event={event}
                 getEvent={getEvent}
               />
             ))}

@@ -7,7 +7,7 @@ contract VotingFactory {
     // ? Tableau des contrats Voting
     Voting[] votingContracts;
 
-    function createVotingContract() external returns (address) {
+    function createVotingContract() public returns (address) {
         // ? Création d'une nouvelle instance de contrat
         Voting v = new Voting(msg.sender);
         // ? Ajout du contat voting dans le tableau

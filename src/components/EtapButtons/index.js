@@ -38,14 +38,14 @@ export const EtapButton = () => {
       voters?.map((voter) => (voter?.hasVoted ? counterVote++ : null));
 
       if (whitelist.length <= 2) {
-        setError("changeStatus. Please add at least 3 whitelist address.");
+        setError("changeStatus. Please add at least 3 whitelist addresses.");
       } else if (proposals.length < 2) {
         setError(
-          "changeStatus. Please wait at least 2 proposals for close proposals registration."
+          "changeStatus. Please wait at least 2 proposals to close proposals registration."
         );
       } else if (counterVote <= 2) {
         setError(
-          "changeStatus. Please wait at least 3 votes for close vote registration."
+          "changeStatus. Please wait at least 3 votes to close vote registration."
         );
       } else {
         setError("changeStatus. Please verify if you're the owner.");

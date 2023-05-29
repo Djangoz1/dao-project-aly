@@ -30,3 +30,11 @@ Une fois cela fait, vous pouvez lancer la dApp `npm run start`
 **Pour passer à l'étape `ProposalsRegistrationEnded`** : *Il faut au moins 2 propositions pour qu'il y ait un choix et qu'une majorité puisse (potentiellement) se dégager.*
 
 **Pour passer à l'étape `VotingSessionEnded`** : *Il faut au moins 3 votes pour qu'il y ait un résultat qui soit un minimum pertinent.*
+
+***
+## Ce qui pourrait être amélioré
+
+- Optimiser le contrat pour réduire les frais de gaz à chaque déploiement
+- On pourrais faire un arbre de merkle  pour prouver la whitelist de chaque contrat voting 
+- On pourrais faire un deuxième tour de vote en cas d'égalité et ne garder que les propositions qui sont à égalité pour restreindre le choix de vote 
+- Les bugs  du front

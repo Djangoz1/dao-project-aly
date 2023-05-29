@@ -22,7 +22,11 @@ export const Proposals = () => {
   }, [targetContract]);
 
   return (
-    <div className="flex mt-[4vh] flex-col ">
+    <div
+      className={`flex mt-[4vh] flex-col ${
+        workflowStatus === 0 && "opacity-20"
+      }`}
+    >
       <h3 className="text-left text-2xl text-white uppercase font-black">
         Proposals{" "}
         <span className="text-sm text-gray-500 font-light capitalize">

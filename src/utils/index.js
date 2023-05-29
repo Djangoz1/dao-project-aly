@@ -85,12 +85,18 @@ export const _getWhitelist = async (_address) => {
 
 export const _getVoter = async (_address, _contract) => {
   if (typeof window.ethereum !== "undefined") {
+    let _accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
     const provider = new ethers.providers.Web3Provider(window.ethereum);
 
     const contract = new ethers.Contract(_contract, Voting.abi, provider);
 
     try {
-      const _voter = await contract.getVoter(_address);
+      let overrides = {
+        from: _accounts[0],
+      };
+      const _voter = await contract.getVoter(_address, overrides);
 
       return _voter;
     } catch (err) {
@@ -233,6 +239,27 @@ export const _votingProposal = async (_proposalId, _address) => {
 
       const _proposals = await contract.settingVote(_proposalId, overrides);
       await _proposals.wait();
+    } catch (err) {
+      return err;
+    }
+  }
+};
+export const _getWinner = async (_contract) => {
+  if (typeof window.ethereum !== "undefined") {
+    let _accounts = await window.ethereum.request({
+      method: "eth_requestAccounts",
+    });
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const contract = new ethers.Contract(_contract, Voting.abi, signer);
+
+    try {
+      let overrides = {
+        from: _accounts[0],
+      };
+
+      return await contract.getWinner(overrides);
+      // await _proposals.wait();
     } catch (err) {
       return err;
     }

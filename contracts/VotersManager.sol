@@ -7,6 +7,9 @@ import "./ProposalsManager.sol";
 // ? Le contrat hérite des propositions pour qu'un voter puissent voter pour la proposition qu'il a choisi
 // ! WorkflowStatusManager est hérité depuis ProposalsManager
 contract VotersManager is ProposalsManager {
+    event VoterRegistered(address voter);
+    event Voted(address voter, uint proposalId);
+
     // ? Les informations d'un voter (d'une address) est si elle est enregistrer, si elle a voté et qui elle a voté
     struct Voter {
         bool isRegistered;
@@ -19,7 +22,6 @@ contract VotersManager is ProposalsManager {
     // ? Modifier qui s'assure que l'address est bien dans la liste des voters
     modifier voterAccess() {
         require(voters[msg.sender].isRegistered, "you're not registred");
-
         _;
     }
 
@@ -33,7 +35,7 @@ contract VotersManager is ProposalsManager {
     // ? On sélectionne un voter en indiquant l'address en paramètre
     function getVoter(
         address _address
-    ) public view voterAccess returns (Voter memory) {
+    ) external view voterAccess returns (Voter memory) {
         // Vérifier que l'adress est whitelister
         require(voters[_address].isRegistered, "address is not registered");
         return voters[_address];
@@ -41,17 +43,17 @@ contract VotersManager is ProposalsManager {
 
     // * Setter struct
     // ? On vote pour une proposition en indiquant l'id de la proposition en paramètre
-    function settingVote(
+    function _settingVote(
         uint _id
     )
-        public
+        internal
         voterAccess
         checkWorkflowStatus(WorkflowStatus.VotingSessionStarted)
     {
         // Vérifier que la proposition existe
-        require(_id < proposals.length, "This proposal doesn't exist");
+        require(_id < proposals.length, "proposal doesn't exist");
         // Vérifier que l'électeur n'a pas déjà voté
-        require(!voters[msg.sender].hasVoted, "You vote is already done");
+        require(!voters[msg.sender].hasVoted, "Your vote is already cast");
 
         // On ajoute sa voie au compteur de vote pour la proposition sélectionner
         proposals[_id].voteCount++;
@@ -61,6 +63,7 @@ contract VotersManager is ProposalsManager {
         voters[msg.sender].votedProposalId = _id;
 
         globalCounterVote++;
+
         // On émet l'information de l'address qui a voté et de la proposition sélectionner
         emit Voted(msg.sender, _id);
     }

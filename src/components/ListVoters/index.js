@@ -14,11 +14,14 @@ export const ListVoters = ({ user }) => {
   const dispatch = useAuthDispatch();
   useEffect(() => {
     if (targetContract) {
-      doWhitelistState(dispatch, targetContract).then((e) =>
-        doVotersState(dispatch, whitelist, targetContract)
-      );
+      doWhitelistState(dispatch, targetContract);
     }
   }, [targetContract]);
+  useEffect(() => {
+    if (whitelist && targetContract) {
+      doVotersState(dispatch, whitelist, targetContract);
+    }
+  }, [whitelist]);
 
   return (
     <div className="overflow-x-visible relative">
