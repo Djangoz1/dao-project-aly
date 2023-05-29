@@ -3,6 +3,9 @@
  - Vous pouvez retrouver le contrat tel qu'il était demandé (et monolithique) dans le dossier `contracts/original/Voting.sol`
  - Pour aller plus loin, j'ai créer une dapp en essayant une modularité dans mes fichiers contrats et j'ai mis en place une "usine de contrat voting". C'est cette usine qu'hardhat déploie et la dapp s'occupe de déployer les contrats voting.
 
+
+$Attention$ : Il faudras probablement mettre à jour le nonce sur metamask
+
 ### 1.  Pour accéder à la dapp, commencé par initier le noeud hardhat :
 - `npx hardhat node` 
 ***
