@@ -42,4 +42,4 @@ Une fois cela fait, vous pouvez lancer la dApp `npm run start`
 - Optimiser le contrat pour réduire les frais de gaz à chaque déploiement
 - On pourrais faire un arbre de merkle  pour prouver la whitelist de chaque contrat voting 
 - On pourrais faire un deuxième tour de vote en cas d'égalité et ne garder que les propositions qui sont à égalité pour restreindre le choix de vote 
-- Les bugs  du front
+- Les bugs  du front (Essayez un refresh en cas de bug)
