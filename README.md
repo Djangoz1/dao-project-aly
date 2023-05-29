@@ -17,6 +17,8 @@ Le contrat déployer est `FactoryVoting.sol`. Ce contrat permet de multiplier le
 
 Une fois cela fait, vous pouvez lancer la dApp `npm run start`
 
+### 4. Assurez-vous d'être sur l'ID de chaîne 1337 pour intéragir avec le contrat 
+
 ***
 
 ## Quelques conditions
