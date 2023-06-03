@@ -29,7 +29,7 @@ contract Voting is WhitelistManager {
     function addProposal(
         string memory _description
     )
-        internal
+        external
         voterAccess
         checkWorkflowStatus(WorkflowStatus.ProposalsRegistrationStarted)
     {
